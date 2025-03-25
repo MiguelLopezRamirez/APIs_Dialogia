@@ -5,14 +5,14 @@ import cors from 'cors';
 import swaggerSpec from './config/swagger.config'; // Import the Swagger config
 import swaggerUI from 'swagger-ui-express';
 //MALR: imports Routes
-import routeAPI from './api/v1/routes/index'
+import routerAPI from './api/v1/routes/index'
 //MALR: imports Middlewares
 //MALR: Config para variables de entorno
 import config from './config/config';
 //MALR: Declaramos la variable app igualandola a express 
 const app = express();
 //MALR: Establece la conexion a la BD 
-import { mongoose } from './config/database.config';
+// import { mongoose } from './config/database.config';
 //MALR: Settings
 app.set('port', config.PORT);
 //MALR: Middlewares generales
@@ -33,6 +33,6 @@ app.get(`${api}`, (req,res)=>{
 // Serve Swagger Docs
 app.use(`${config.API_URL}/api-docs`, swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 // Middleware para el manejo de errores
-routeAPI(app);
+routerAPI(app);
 // Export App
 export default app;

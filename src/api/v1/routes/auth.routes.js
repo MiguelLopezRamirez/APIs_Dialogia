@@ -1,17 +1,15 @@
-import {Router} from 'express'
-import * as authController from '../controllers/auth.controller'
+import express from 'express';
+import { register, login, forgotPassword } from '../controllers/auth.controller';
 
-const router = Router();
+const router = express.Router();
 
-const at = require('../middleware/auth.middleware.js').verifyToken
+// Ruta para registrar un nuevo usuario
+router.post('/register', register);
 
-router.get('/', at,authController.getUserList);
+// Ruta para iniciar sesión
+router.post('/login', login);
 
-router.get('/:id', at, authController.getUserItem);
-
-router.post('/register', authController.registerUser);
-
-router.post('/login', authController.loginUser);
-
+// Ruta para recuperar contraseña
+router.post('/forgot-password', forgotPassword);
 
 export default router;

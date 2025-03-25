@@ -1,73 +1,39 @@
-import User from '../models/User';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import config from '../../../config/config';
-//MALR: API GET
-//MALR: All Users
-export const getUserList = async (req, res, next) =>{
-  try{
-    const userList = await User.find();
-    if ( userList.length  === 0){
-        res.status(404).send({message: 'No found Users'})
-    }else if (userList){
-        res.status(200).json(userList)
-    }
-  }catch{
-    res.status(500).send({ message: 'Internal Sever Error ', error });
-  } 
-};
+import { auth } from '../../../config/firebase.config';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 
-//MALR: API GET
-//MALR: One User
-export const getUserItem = async (req, res, next) =>{
-    try{
-        const { id } = req.params;
-        const userItem = await await User.findOne({
-                    username: id,
-                });
-        if (!userItem){
-            res.status(404).send({message: 'No found User'})
-        }else if (userItem){
-          res.status(200).json(userItem)
-        }
-    }catch(error){
-        res.status(500).send({ message: 'Internal Sever Error ', error });
-    } 
-  };
+// Registrar un nuevo usuario
+export const register = async (req, res) => {
+  const { email, password } = req.body;
 
-// MALR: Register
-export const registerUser = async(req, res) =>{
   try {
-    const { username, email, password } = req.body;
-
-    const existingUser = await User.findOne({ username });
-    const existingEmail = await User.findOne({ email });
-    if (existingUser || existingEmail) return res.status(400).json({ message: 'User already exists' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword, regdate: Date.now()});
-
-    await newUser.save();
-    res.status(201).json({ message: 'User registered successfully' });
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    res.status(201).json({ message: 'Usuario registrado', uid: userCredential.user.uid });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(400).json({ error: error.message });
   }
 };
 
-export const loginUser = async(req, res) =>{
+// Iniciar sesión
+export const login = async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { username, password } = req.body;
-
-    const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign({ id: user.username }, config.JWT_SECRET, { expiresIn: '1h' });
-
-    res.status(200).json({ message: 'Login successful', token });
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const token = await userCredential.user.getIdToken(); // Obtener el token de Firebase
+    res.status(200).json({ message: 'Inicio de sesión exitoso', token });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Recuperar contraseña
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    await sendPasswordResetEmail(auth, email);
+    res.status(200).json({ message: 'Correo de recuperación enviado' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 };

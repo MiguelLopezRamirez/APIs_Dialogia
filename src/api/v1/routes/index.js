@@ -9,7 +9,7 @@ const routerAPI = (app) => {
 
     app.use(api, router);
 
-    router.use('/users', userRoutes)
+    router.use('/auth', userRoutes)
 
     return router;
 };
