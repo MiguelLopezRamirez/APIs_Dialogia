@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+const { getFirestore } = require('firebase/firestore');
 import config from './config';
 
 console.log('Configuración de Firebase:', config); // Verifica que las credenciales se carguen correctamente
@@ -15,8 +15,8 @@ const firebaseConfig = {
 
 // Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const db = getFirestore(app);
 
 console.log('Firebase inicializado correctamente'); // Verifica que Firebase se inicialice
 
-export { auth };
+export { db };

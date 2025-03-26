@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import config from '../../../config/config'
 
-import userRoutes from './auth.routes'
+
+import categoryRoutes from './category.routes';
 
 const routerAPI = (app) => {
     const router = Router();
@@ -9,7 +10,8 @@ const routerAPI = (app) => {
 
     app.use(api, router);
 
-    router.use('/auth', userRoutes)
+
+    router.use('/category', categoryRoutes);
 
     return router;
 };

@@ -1,0 +1,56 @@
+{
+  "categories":[
+    
+    {
+      "idCategory":"idPhilosophy",
+      "name":"Filosofia",
+      "description":"Foro para todos los debates relacionados a la filosofía, el cuestionamiento del pensamiento humando y el razonamiento profundo."
+    },
+    {
+      "idCategory":"idPolicy",
+      "name":"POLITICA",
+      "description":"Foro para todos los debates realacionados con politica, el gobierno y vida en los diferentes tipo de modelos de gobierno."
+    },
+    {
+      "idCategory": "idPopCulture",
+      "name": "Cultura POP",
+      "description": "Foro para discutir sobre entretenimiento, cine, series, música, celebridades y tendencias de la cultura popular."
+    },
+    {
+      "idCategory": "idConspiracies",
+      "name": "CONSPIRACIONES",
+      "description": "Foro para debatir teorías de conspiración, misterios sin resolver y eventos ocultos en la historia y la actualidad."
+    },
+    {
+      "idCategory": "idSocial",
+      "name": "SOCIALES",
+      "description": "Foro para hablar sobre dinámicas sociales, comportamiento humano, relaciones interpersonales y temas de la sociedad."
+    },
+    {
+      "idCategory": "idHistory",
+      "name": "HISTORY",
+      "description": "Foro para debatir sobre hechos históricos, civilizaciones antiguas, guerras y personajes que marcaron el mundo."
+    },
+    {
+      "idCategory": "idScience",
+      "name": "CIENCIA",
+      "description": "Foro para compartir y discutir avances científicos, teorías, descubrimientos y su impacto en la humanidad."
+    },
+    {
+      "idCategory": "idEconomy",
+      "name": "ECONOMÍA",
+      "description": "Foro para analizar mercados, sistemas económicos, finanzas personales y el impacto de la economía en la sociedad."
+    },
+
+    {
+      "idCategory": "idTechnology",
+      "name": "TECNOLOGIA",
+      "description": "Foro para discutir avances tecnológicos, inteligencia artificial, ciberseguridad y tendencias en innovación."
+    },
+    {
+      "idCategory": "idGaming",
+      "name": "VIDEOJUEGOS",
+      "description": "Foro para hablar sobre videojuegos, consolas, esports y el impacto de los juegos en la sociedad."
+    }
+  ]
+}

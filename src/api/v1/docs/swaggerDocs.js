@@ -2,7 +2,7 @@ const swaggerDocs = {
   openapi: '3.0.0',
   info: {
     title: 'Debate App API',
-    description: 'API endpoints for managing users',
+    description: 'API endpoints for managing categories',
     version: '1.0.0'
   },
   servers: [
@@ -12,60 +12,35 @@ const swaggerDocs = {
   ],
   tags: [
     {
-      name: 'Users',
-      description: 'API endpoints for managing users'
+      name: 'Categories',
+      description: 'API endpoints for managing categories'
     }
   ],
   paths: {
-    '/users': {
+    '/category': {
       get: {
-        summary: 'Get all users',
-        tags: ['Users'],
+        summary: 'Get all categories',
+        tags: ['Categories'],
         responses: {
           200: {
-            description: 'List of all users'
-          },
-          404: {
-            description: 'No users found'
+            description: 'List of all categories',
+            content: {
+              'application/json': {
+                example: [
+                  { "id": "1", "name": "TECHNOLOGY", "description": "Topics related to tech." },
+                  { "id": "2", "name": "SCIENCE", "description": "Scientific discussions." }
+                ]
+              }
+            }
           },
           500: {
             description: 'Internal Server Error'
           }
         }
-      }
-    },
-    '/users/{id}': {
-      get: {
-        summary: 'Get a single user by username',
-        tags: ['Users'],
-        parameters: [
-          {
-            in: 'path',
-            name: 'id',
-            required: true,
-            schema: {
-              type: 'string'
-            },
-            description: 'The username of the user'
-          }
-        ],
-        responses: {
-          200: {
-            description: 'User details'
-          },
-          404: {
-            description: 'User not found'
-          },
-          500: {
-            description: 'Internal Server Error'
-          }
-        }
-      }
-    },
-    '/users/register': {
+      },
       post: {
-        summary: 'Register a new user',
-        tags: ['Users'],
+        summary: 'Create a new category',
+        tags: ['Categories'],
         requestBody: {
           required: true,
           content: {
@@ -73,20 +48,29 @@ const swaggerDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  username: { type: 'string' },
-                  email: { type: 'string' },
-                  password: { type: 'string' }
-                }
+                  id: { type: 'string' },
+                  name: { type: 'string' },
+                  description: { type: 'string' }
+                },
+                required: ['id', 'name', 'description']
+              },
+              example: {
+                "id": "3",
+                "name": "POLITICS",
+                "description": "Discussions on politics."
               }
             }
           }
         },
         responses: {
           201: {
-            description: 'User registered successfully'
+            description: 'Category created successfully'
           },
           400: {
-            description: 'User already exists'
+            description: 'Invalid input data'
+          },
+          409: {
+            description: 'Category already exists'
           },
           500: {
             description: 'Server error'
@@ -94,10 +78,43 @@ const swaggerDocs = {
         }
       }
     },
-    '/users/login': {
-      post: {
-        summary: 'User login',
-        tags: ['Users'],
+    '/category/{id}': {
+      get: {
+        summary: 'Get a category by ID',
+        tags: ['Categories'],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Category ID'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Category details'
+          },
+          404: {
+            description: 'Category not found'
+          },
+          500: {
+            description: 'Server error'
+          }
+        }
+      },
+      put: {
+        summary: 'Update a category',
+        tags: ['Categories'],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Category ID'
+          }
+        ],
         requestBody: {
           required: true,
           content: {
@@ -105,22 +122,106 @@ const swaggerDocs = {
               schema: {
                 type: 'object',
                 properties: {
-                  username: { type: 'string' },
-                  password: { type: 'string' }
-                }
+                  name: { type: 'string' },
+                  description: { type: 'string' }
+                },
+                required: ['name']
               }
             }
           }
         },
         responses: {
           200: {
-            description: 'Login successful, returns a JWT token'
-          },
-          401: {
-            description: 'Invalid credentials'
+            description: 'Category updated successfully'
           },
           404: {
-            description: 'User not found'
+            description: 'Category not found'
+          },
+          500: {
+            description: 'Server error'
+          }
+        }
+      },
+      delete: {
+        summary: 'Delete a category',
+        tags: ['Categories'],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Category ID'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Category deleted successfully'
+          },
+          404: {
+            description: 'Category not found'
+          },
+          500: {
+            description: 'Server error'
+          }
+        }
+      }
+    },
+    '/category/search': {
+      get: {
+        summary: 'Search categories by name',
+        tags: ['Categories'],
+        parameters: [
+          {
+            in: 'query',
+            name: 'name',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Search query'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Search results'
+          },
+          400: {
+            description: 'Invalid search query'
+          },
+          500: {
+            description: 'Server error'
+          }
+        }
+      }
+    },
+    '/category/array': {
+      post: {
+        summary: 'Insert multiple categories at once',
+        tags: ['Categories'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    idCategory: { type: 'string' },
+                    name: { type: 'string' },
+                    description: { type: 'string' }
+                  },
+                  required: ['idCategory', 'name', 'description']
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Categories inserted successfully'
+          },
+          400: {
+            description: 'Invalid input data'
           },
           500: {
             description: 'Server error'
