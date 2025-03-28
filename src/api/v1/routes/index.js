@@ -3,7 +3,7 @@ import config from '../../../config/config'
 
 
 import categoryRoutes from './category.routes';
-
+import debateRoutes from './debate.routes';
 const routerAPI = (app) => {
     const router = Router();
     const api = config.API_URL;
@@ -12,7 +12,7 @@ const routerAPI = (app) => {
 
 
     router.use('/category', categoryRoutes);
-
+    router.use('/debates', debateRoutes);
     return router;
 };
 
