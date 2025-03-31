@@ -1,5 +1,5 @@
 const { Debate, debatesCollection } = require('../models/debate.model');
-const { categoriesCollection } = require('../models/category.model');
+const { Category, categoriesCollection } = require('../models/category.model');
 const {
   doc,
   setDoc,
@@ -61,11 +61,14 @@ const debateController = {
   },
 
   // Obtener todos los debates
-  getAllDebates: async (req, res) => {
+  /*getAllDebates: async (req, res) => {
     try {
       const querySnapshot = await getDocs(debatesCollection);
       const debates = querySnapshot.docs.map(doc => {
         const debate = Debate.fromFirestore(doc);
+
+        debate.category = "hola";
+
         return debate.toJSON();
       });
      
@@ -91,7 +94,74 @@ const debateController = {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  },
+  },*/
+
+  // Obtener todos los debates
+getAllDebates: async (req, res) => {
+  try {
+    const querySnapshot = await getDocs(debatesCollection);
+    const debatesData = querySnapshot.docs.map(doc => {
+      return Debate.fromFirestore(doc);
+    });
+
+    // Obtener IDs únicos de categorías
+    const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+
+    // Buscar todas las categorías en paralelo
+    const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+    const categorySnapshots = await Promise.all(categoryPromises);
+
+    // Crear mapa de ID a nombre
+    const categoryMap = {};
+    categorySnapshots.forEach(snap => {
+      if (snap.exists()) {
+        const category = Category.fromFirestore(snap);
+        categoryMap[snap.id] = category.name;
+      }
+    });
+
+    // Reemplazar IDs con nombres
+    const debates = debatesData.map(debate => {
+      const json = debate.toJSON();
+      json.category = categoryMap[debate.category] || null;
+      return json;
+    });
+
+    res.status(200).json(debates);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+},
+
+// Obtener debate por ID
+getDebateById: async (req, res) => {
+  try {
+    const { id } = req.params;
+    const docRef = doc(debatesCollection, id);
+    const docSnap = await getDoc(docRef);
+    
+    if (!docSnap.exists()) {
+      return res.status(404).json({ error: 'Debate no encontrado' });
+    }
+    
+    const debate = Debate.fromFirestore(docSnap);
+    
+    // Obtener nombre de la categoría
+    const categoryRef = doc(categoriesCollection, debate.category);
+    const categorySnap = await getDoc(categoryRef);
+    
+    if (categorySnap.exists()) {
+      const category = Category.fromFirestore(categorySnap);
+      debate.category = category.name;
+    } else {
+      debate.category = null; // o mantener el ID si prefieres
+    }
+
+    res.status(200).json(debate.toJSON());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+},
 
   // Actualizar debate (PATCH para actualizaciones parciales)
   updateDebate: async (req, res) => {
