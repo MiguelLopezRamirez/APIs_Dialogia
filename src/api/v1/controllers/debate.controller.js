@@ -370,7 +370,8 @@ getDebateById: async (req, res) => {
   getDebatesByCategory: async (req, res) => {
     try {
       const { categoryId } = req.params;
-     
+      const { sort = 'recent' } = req.query;
+      // const sort = 'ancient'
       // Verificar que la categoría exista
       const categoryRef = doc(categoriesCollection, categoryId);
       const categorySnap = await getDoc(categoryRef);
@@ -385,11 +386,27 @@ getDebateById: async (req, res) => {
       );
      
       const querySnapshot = await getDocs(q);
-      const debates = querySnapshot.docs.map(doc => {
+      let debates = querySnapshot.docs.map(doc => {
         const debate = Debate.fromFirestore(doc);
-        return debate.toJSON();
+        return debate
       });
-     
+      // Ordenamiento
+      switch (sort) {
+        case 'active':
+          debates = debates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+          break;
+        case 'popular':
+          debates = debates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          break;
+        case 'ancient':
+          debates = debates.sort((a, b) => a.datareg - b.datareg); // Resta directa de objetos Date
+          break;
+        case 'recent':
+        default:
+          debates = debates.sort((a, b) => b.datareg - a.datareg); // Resta directa de objetos Date
+          break;
+      }
+
       res.status(200).json(debates);
     } catch (error) {
       res.status(500).json({ error: error.message });
