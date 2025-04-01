@@ -3,54 +3,97 @@
     
     {
       "idCategory":"idPhilosophy",
-      "name":"Filosofia",
-      "description":"Foro para todos los debates relacionados a la filosofía, el cuestionamiento del pensamiento humando y el razonamiento profundo."
+      "name": "Filosofía",
+      "description":
+        "Foro para todos los debates relacionados a la filosofía, el cuestionamiento del pensamiento humano y el razonamiento profundo. Un espacio para analizar grandes preguntas existenciales y explorar las diversas corrientes filosóficas a lo largo de la historia.",
+      "image":
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Sanzio_01_Plato_Aristotle.jpg/800px-Sanzio_01_Plato_Aristotle.jpg",
+      "background": "https://images.ecestaticos.com/YWOXT_EZ1_zgJzlO_Oc955aHT9g=/0x0:2145x1398/1200x900/filters:fill(white):format(jpg)/f.elconfidencial.com%2Foriginal%2F77a%2Fa2c%2Fc80%2F77aa2cc80d18747df1cfcbc1ba70eccc.jpg",
+      "order": 1
+    },
+    {
+      "idCategory":"idScience",
+      "name": "Ciencia",
+      "description":
+        "Espacio dedicado a debatir los avances científicos más innovadores y sus implicaciones en nuestra sociedad. Aquí se promueve el pensamiento crítico y se exploran teorías que desafían el entendimiento convencional del mundo natural.",
+      "image":
+        "https://i.pinimg.com/736x/9f/75/0d/9f750d6d963c942dba53bbaa102d3d28.jpg"
+    },{
+      "idCategory":"idReligion",
+      "name": "Religión",
+      "description":
+        "Un lugar para el diálogo interreligioso y el análisis profundo de las creencias que han moldeado culturas y civilizaciones. Se abordan temas de espiritualidad, dogmas y la influencia de la fe en la vida moderna con respeto y rigor.",
+      "image":
+        "https://e0.pxfuel.com/wallpapers/491/377/desktop-wallpaper-xavier-raghunanan-on-phone-aesthetic-painting-aesthetic-art-renaissance-paintings.jpg"
+    },{
+      "idCategory":"idSports",
+    "name": "Deportes",
+    "description":
+      "Foro para debatir y analizar el mundo deportivo, donde se discuten tácticas, rivalidades y el impacto social y cultural de las competiciones. Un espacio ideal para fanáticos que desean profundizar en cada jugada y estrategia.",
+    "image":
+      "https://i.pinimg.com/474x/1f/91/a0/1f91a0e4a7c43bfddd4510006878c4be.jpg"
     },
     {
       "idCategory":"idPolicy",
-      "name":"POLITICA",
-      "description":"Foro para todos los debates realacionados con politica, el gobierno y vida en los diferentes tipo de modelos de gobierno."
+      "name": "Política",
+      "description":
+        "Foro abierto para el análisis y la discusión sobre estrategias políticas, decisiones gubernamentales y dinámicas de poder. Se fomenta un debate informado y el intercambio de ideas para comprender mejor la gestión pública y los desafíos del liderazgo.",
+      "image":
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPuBDcX7TwlIaQTThv9bABzXcbNZyPVnaPP2aLZOfnJAuBNudcG39NOkAOkhy1-HPKPPs&usqp=CAU"
     },
     {
       "idCategory": "idPopCulture",
-      "name": "Cultura POP",
-      "description": "Foro para discutir sobre entretenimiento, cine, series, música, celebridades y tendencias de la cultura popular."
+      "name": "Cultura Pop",
+      "description":
+        "Un vibrante espacio para debatir sobre tendencias del entretenimiento, música, cine, series y fenómenos virales. Se fomenta la crítica y el análisis de cómo la cultura pop influye y refleja la sociedad actual.",
+      "image": "https://wallpapercave.com/wp/wp5283166.jpg"
     },
     {
       "idCategory": "idConspiracies",
-      "name": "CONSPIRACIONES",
-      "description": "Foro para debatir teorías de conspiración, misterios sin resolver y eventos ocultos en la historia y la actualidad."
+      "name": "Conspiración",
+      "description":
+        "Espacio para explorar y debatir teorías conspirativas, cuestionar narrativas oficiales y analizar misterios sin resolver. Se promueve un enfoque crítico y escéptico que invita a investigar y dialogar sobre hechos controvertidos.",
+      "image":
+        "https://w0.peakpx.com/wallpaper/40/525/HD-wallpaper-illuminati-funny.jpg"
     },
     {
       "idCategory": "idSocial",
-      "name": "SOCIALES",
-      "description": "Foro para hablar sobre dinámicas sociales, comportamiento humano, relaciones interpersonales y temas de la sociedad."
+      "name": "Social",
+      "description":
+        "Un espacio dedicado a los debates sobre temas sociales, la evolución de las dinámicas humanas y los desafíos en la construcción de una sociedad más equitativa e inclusiva. Se promueve el intercambio de ideas y el análisis de los cambios culturales.",
+      "image":
+        "https://i.pinimg.com/236x/69/d6/da/69d6da0601f28f58ff96ee1ad3c6f7d6.jpg"
     },
     {
       "idCategory": "idHistory",
-      "name": "HISTORY",
-      "description": "Foro para debatir sobre hechos históricos, civilizaciones antiguas, guerras y personajes que marcaron el mundo."
-    },
-    {
-      "idCategory": "idScience",
-      "name": "CIENCIA",
-      "description": "Foro para compartir y discutir avances científicos, teorías, descubrimientos y su impacto en la humanidad."
+      "name": "Historia",
+      "description":
+        "Espacio para analizar eventos históricos y debatir su relevancia e impacto en el mundo moderno.",
+      "image": "https://wallpapers.com/images/hd/dark-ages-ds9jqq5tmlsj963n.jpg"
     },
     {
       "idCategory": "idEconomy",
-      "name": "ECONOMÍA",
-      "description": "Foro para analizar mercados, sistemas económicos, finanzas personales y el impacto de la economía en la sociedad."
+      "name": "Economía",
+      "description":
+        "Foro para discutir políticas económicas, el funcionamiento de los mercados financieros y su impacto en la sociedad. Se abordan temas de globalización, inversión y estrategias económicas desde un enfoque crítico y analítico.",
+      "image": "https://wallpapercave.com/wp/wp13280932.jpg"
     },
 
     {
       "idCategory": "idTechnology",
-      "name": "TECNOLOGIA",
-      "description": "Foro para discutir avances tecnológicos, inteligencia artificial, ciberseguridad y tendencias en innovación."
+      "name": "Tecnología",
+      "description":
+        "Lugar para debatir las innovaciones tecnológicas, el impacto de la digitalización y el futuro de la inteligencia artificial. Se exploran desde gadgets y redes sociales hasta desarrollos que transforman la manera en que vivimos y nos comunicamos.",
+      "image":
+        "https://w0.peakpx.com/wallpaper/80/546/HD-wallpaper-robot-abstract-art-design-graphic-green-illustration-texture-vector.jpg"
     },
+
     {
-      "idCategory": "idGaming",
-      "name": "VIDEOJUEGOS",
-      "description": "Foro para hablar sobre videojuegos, consolas, esports y el impacto de los juegos en la sociedad."
+      "idCategory": "idOthers",
+      "name": "Otros",
+      "description":
+        "Espacio para todos los temas que no encajan con las categorías que hemos definido para ti.",
+      "image": "https://i.pinimg.com/564x/80/05/94/80059433996fbf827fcae5826b7bbfce.jpg"
     }
   ]
 }

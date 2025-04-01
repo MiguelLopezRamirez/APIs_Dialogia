@@ -14,7 +14,7 @@ const categoryController = {
   // Crear categoría
   createCategory: async (req, res) => {
     try {
-      const { id, name, description } = req.body;
+      const { id, name, description, image, background ,order } = req.body;
       
       // Validaciones
       if (!id || !name) {
@@ -30,13 +30,16 @@ const categoryController = {
       }
 
       // Crear nueva categoría
-      const newCategory = new Category(id, name, description);
+      const newCategory = new Category(id, name, description, image, background, order);
       await setDoc(docRef, newCategory.toFirestore());
 
       res.status(201).json({
         id: newCategory.id,
         name: newCategory.name,
-        description: newCategory.description
+        description: newCategory.description,
+        image: newCategory.image,
+        background: newCategory.background,
+        order: newCategory.order
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -79,7 +82,7 @@ const categoryController = {
   updateCategory: async (req, res) => {
     try {
       const { id } = req.params;
-      const { name, description } = req.body;
+      const { name, description, image, background, order } = req.body;
       
       if (!name) {
         return res.status(400).json({ error: 'Name is required' });
@@ -94,13 +97,18 @@ const categoryController = {
       
       await updateDoc(docRef, { 
         name, 
-        description: description || null 
+        description: description || null,
+        image: image || null,
+        background: background || null,
+        order: order || null
       });
       
       res.status(200).json({ 
         id, 
         name, 
-        description 
+        description,
+        image,
+        order
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -170,8 +178,8 @@ insertCategories: async (req, res) => {
   
       const insertedCategories = [];
   
-      for (const category of categories) {
-        if (!category.idCategory || !category.name || !category.description) {
+      for (const category of categories) {1
+        if (!category.idCategory || !category.name || !category.description ||!category.image ||!category.background ||!category.order) {
           return res.status(400).json({ error: 'Each category must have idCategory, name, and description' });
         }
   
@@ -179,8 +187,11 @@ insertCategories: async (req, res) => {
   
         await setDoc(categoryRef, {
           idCategory: category.idCategory,
-          name: category.name.toUpperCase(), // Convert name to uppercase
-          description: category.description
+          name: category.name, 
+          description: category.description,
+          image: category.image,
+          background: category.background,
+          order: category.order
         });
   
         insertedCategories.push(category.idCategory);

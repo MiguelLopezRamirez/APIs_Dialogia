@@ -1,10 +1,13 @@
 const { db } = require('../../../config/firebase.config');
 const { collection } = require('firebase/firestore');
 class Category {
-  constructor(id, name, description) {
+  constructor(id, name, description, image, background ,order) {
     this.id = id;
     this.name = name;
     this.description = description;
+    this.image = image;
+    this.background = background;
+    this.order = order;
     this.createdAt = new Date();
   }
 
@@ -13,6 +16,9 @@ class Category {
     return {
       name: this.name,
       description: this.description,
+      image: this.image,
+      background: this.background,
+      order: this.order,
       createdAt: this.createdAt
     };
   }
@@ -23,7 +29,10 @@ class Category {
     return new Category(
       doc.id,
       data.name,
-      data.description
+      data.description,
+      data.image,
+      data.background,
+      data.order
     );
   }
 }
