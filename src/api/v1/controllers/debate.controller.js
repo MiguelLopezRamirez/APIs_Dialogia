@@ -10,6 +10,7 @@ const {
   query,
   where,
   orderBy,
+  writeBatch,
   limit,
   increment,
   arrayUnion,
@@ -56,6 +57,85 @@ const debateController = {
 
       res.status(201).json(createdDebate.toJSON());
     } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  createDebates: async(req, res) =>{
+    try {
+      const debatesData = req.body; // Array de debates
+  
+      // Validar que sea un array
+      if (!Array.isArray(debatesData)) {
+        return res.status(400).json({ error: 'Se esperaba un array de debates' });
+      }
+  
+      // Validar que la colección de debates esté disponible
+      if (!debatesCollection) {
+        return res.status(500).json({ error: 'Error de configuración de Firestore' });
+      }
+  
+      // Preparar batch de operaciones
+      const batch = writeBatch(debatesCollection.firestore);
+      const createdDebates = [];
+  
+      for (const debateData of debatesData) {
+        const { nameDebate, argument, category, username, refs = [], image = '' } = debateData;
+  
+        // Validaciones básicas
+        if (!nameDebate || !argument || !category || !username) {
+          return res.status(400).json({ 
+            error: `Debate inválido: Nombre, argumento, categoría y usuario son requeridos para el debate: ${nameDebate || 'sin nombre'}` 
+          });
+        }
+  
+        // Verificar categoría (si categoriesCollection está disponible)
+        if (categoriesCollection) {
+          const categoryRef = doc(categoriesCollection, category);
+          const categorySnap = await getDoc(categoryRef);
+          
+          if (!categorySnap.exists()) {
+            return res.status(400).json({ 
+              error: `La categoría ${category} no existe para el debate: ${nameDebate}` 
+            });
+          }
+        }
+  
+        // Crear ID del debate (usar el proporcionado o generar uno nuevo)
+        const debateId = debateData.idDebate || doc(debatesCollection).id;
+  
+        // Crear instancia del debate
+        const newDebate = new Debate(
+          debateId,
+          nameDebate,
+          argument,
+          category,
+          username,
+          refs,
+          image
+        );
+  
+        // Asignar campos adicionales si existen en los datos
+        if (debateData.comments) newDebate.comments = debateData.comments;
+        if (debateData.popularity) newDebate.popularity = debateData.popularity;
+        if (debateData.peopleInFavor) newDebate.peopleInFavor = debateData.peopleInFavor;
+        if (debateData.peopleAgaist) newDebate.peopleAgaist = debateData.peopleAgaist;
+        if (debateData.datareg) newDebate.datareg = new Date(debateData.datareg);
+  
+        // Añadir operación al batch
+        const debateRef = doc(debatesCollection, debateId);
+        batch.set(debateRef, newDebate.toFirestore());
+  
+        createdDebates.push(newDebate);
+      }
+  
+      // Ejecutar todas las operaciones
+      await batch.commit();
+  
+      // Preparar respuesta
+      res.status(201).json(createdDebates.map(d => d.toJSON()));
+    } catch (error) {
+      console.error('Error creating debates:', error);
       res.status(500).json({ error: error.message });
     }
   },

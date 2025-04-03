@@ -1,0 +1,1146 @@
+[
+	{
+		"idDebate": "phil001",
+		"nameDebate": "¿Existe el libre albedrío?",
+		"argument": "El libre albedrío es una ilusión, nuestras decisiones están determinadas por factores biológicos y ambientales.",
+		"category": "idPhilosophy",
+		"datareg": "2025-03-21T16:15:30.000Z",
+		"username": "socrates22",
+		"image": "",
+		"refs": [
+			"https://plato.stanford.edu/entries/freewill/"
+		],
+		"comments": [
+			{
+				"idComment": "philcom001",
+				"paidComment": "",
+				"username": "nietzsche_fan",
+				"argument": "Sin libre albedrío, la responsabilidad moral no existe. ¿Entonces cómo juzgamos acciones?",
+				"likes": 150,
+				"dislikes": 30,
+				"position": false,
+				"datareg": "2025-03-21 10:20:45"
+			}
+		],
+		"popularity": 8,
+		"peopleInFavor": [
+			"socrates22",
+			"plat0nix"
+		],
+		"peopleAgaist": [
+			"nietzsche_fan",
+			"kantiano"
+		]
+	},
+	{
+		"idDebate": "phil002",
+		"nameDebate": "La alegoría de la caverna hoy",
+		"argument": "Las redes sociales son la nueva caverna de Platón: solo vemos sombras de la realidad.",
+		"category": "idPhilosophy",
+		"datareg": "2025-03-22T21:30:00.000Z",
+		"username": "plat0nix",
+		"image": "",
+		"refs": [
+			"https://es.wikipedia.org/wiki/Alegor%C3%ADa_de_la_caverna"
+		],
+		"comments": [],
+		"popularity": 12,
+		"peopleInFavor": [
+			"plat0nix",
+			"descartesLover"
+		],
+		"peopleAgaist": [
+			"tech_guru",
+			"social_addict"
+		]
+	},
+	{
+		"idDebate": "phil003",
+		"nameDebate": "Ética kantiana vs. utilitarismo",
+		"argument": "La moral debe basarse en deberes universales (Kant), no en consecuencias (utilitarismo).",
+		"category": "idPhilosophy",
+		"datareg": "2025-03-23T18:45:20.000Z",
+		"username": "kantiano",
+		"image": "",
+		"refs": [
+			"https://plato.stanford.edu/entries/kant-moral/"
+		],
+		"comments": [
+			{
+				"idComment": "philcom003",
+				"paidComment": "",
+				"username": "benthamite",
+				"argument": "El utilitarismo maximiza la felicidad real, no abstracta.",
+				"likes": 200,
+				"dislikes": 50,
+				"position": false,
+				"datareg": "2025-03-23 12:30:10"
+			}
+		],
+		"popularity": 15,
+		"peopleInFavor": [
+			"kantiano",
+			"moral_pure"
+		],
+		"peopleAgaist": [
+			"benthamite",
+			"mill_fan"
+		]
+	},
+	{
+		"idDebate": "phil004",
+		"nameDebate": "El nihilismo como liberación",
+		"argument": "Si nada tiene sentido, podemos crear nuestro propio propósito sin ataduras.",
+		"category": "idPhilosophy",
+		"datareg": "2025-03-25T01:20:00.000Z",
+		"username": "nihilist_101",
+		"image": "",
+		"refs": [
+			"https://plato.stanford.edu/entries/nietzsche/"
+		],
+		"comments": [],
+		"popularity": 7,
+		"peopleInFavor": [
+			"nihilist_101",
+			"camus_lover"
+		],
+		"peopleAgaist": [
+			"hope_dealer",
+			"faith_plus"
+		]
+	},
+	{
+		"idDebate": "phil005",
+		"nameDebate": "Pienso, luego existo... ¿y qué más?",
+		"argument": "Descartes reduce la existencia al pensamiento, pero ¿dónde quedan las emociones?",
+		"category": "idPhilosophy",
+		"datareg": "2025-03-25T23:10:33.000Z",
+		"username": "descartesLover",
+		"image": "",
+		"refs": [
+			"https://plato.stanford.edu/entries/descartes/"
+		],
+		"comments": [],
+		"popularity": 9,
+		"peopleInFavor": [
+			"descartesLover",
+			"rational_king"
+		],
+		"peopleAgaist": [
+			"emotion_first",
+			"spinoza_fan"
+		]
+	},
+    {
+        "idDebate": "sci001",
+        "username": "quantum_guru",
+        "nameDebate": "¿Es real el entrelazamiento cuántico?",
+        "argument": "El entrelazamiento cuántico desafía la física clásica y prueba que la realidad es no-local.",
+        "refs": ["https://www.nature.com/articles/s41567-020-0990-x"],
+        "image": "",
+        "category": "idScience",
+        "datareg": "2025-03-21 13:25:10",
+        "comments": [],
+        "popularity": 20,
+        "peopleInFavor": ["quantum_guru", "einstein_was_wrong"],
+        "peopleAgaist": ["newton_forever", "classic_physicist"]
+    },
+    {
+        "idDebate": "sci002",
+        "username": "crispr_fan",
+        "nameDebate": "Edición genética: ¿Jugando a ser Dios?",
+        "argument": "CRISPR podría curar enfermedades, pero también crear desigualdades biológicas.",
+        "refs": ["https://www.science.org/topic/crispr"],
+        "image": "",
+        "category": "idScience",
+        "datareg": "2025-03-22 10:40:00",
+        "comments": [
+        {
+            "idComment": "scicom002",
+            "paidComment": "",
+            "username": "bioethic",
+            "argument": "Sin regulación, esto llevará a eugenesia.",
+            "likes": 300,
+            "dislikes": 45,
+            "position": false,
+            "datareg": "2025-03-22 11:15:22"
+        }
+        ],
+        "popularity": 25,
+        "peopleInFavor": ["crispr_fan", "future_health"],
+        "peopleAgaist": ["bioethic", "natural_life"]
+    },
+    {
+        "idDebate": "sci003",
+        "username": "mars_colonist",
+        "nameDebate": "Colonizar Marte es una distracción",
+        "argument": "Debemos resolver los problemas de la Tierra antes de gastar billones en Marte.",
+        "refs": ["https://www.nasa.gov/mars"],
+        "image": "",
+        "category": "idScience",
+        "datareg": "2025-03-23 17:55:40",
+        "comments": [],
+        "popularity": 18,
+        "peopleInFavor": ["mars_colonist", "earth_first"],
+        "peopleAgaist": ["elon_fanboy", "space_explorer"]
+    },
+    {
+        "idDebate": "sci004",
+        "username": "ai_optimist",
+        "nameDebate": "La IA superará la inteligencia humana en 10 años",
+        "argument": "Los avances en GPT-5 y modelos multimodales lo demuestran.",
+        "refs": ["https://arxiv.org/abs/2305.20050"],
+        "image": "",
+        "category": "idScience",
+        "datareg": "2025-03-24 12:30:15",
+        "comments": [],
+        "popularity": 30,
+        "peopleInFavor": ["ai_optimist", "tech_prophet"],
+        "peopleAgaist": ["ai_doomer", "human_supremacy"]
+    },
+    {
+        "idDebate": "sci005",
+        "username": "climate_scientist",
+        "nameDebate": "El cambio climático es irreversible",
+        "argument": "Incluso con cero emisiones, el calentamiento continuará por siglos.",
+        "refs": ["https://www.ipcc.ch/report/ar6/"],
+        "image": "",
+        "category": "idScience",
+        "datareg": "2025-03-25 08:20:50",
+        "comments": [
+        {
+            "idComment": "scicom005",
+            "paidComment": "",
+            "username": "hopeful_activist",
+            "argument": "Debemos enfocarnos en adaptación, no solo en mitigación.",
+            "likes": 180,
+            "dislikes": 20,
+            "position": true,
+            "datareg": "2025-03-25 09:05:10"
+        }
+        ],
+        "popularity": 22,
+        "peopleInFavor": ["climate_scientist", "data_driven"],
+        "peopleAgaist": ["climate_denier", "oil_lobbyist"]
+    },
+    {
+        "idDebate": "rel001",
+        "username": "theologian",
+        "nameDebate": "¿Dios creó al hombre o el hombre a Dios?",
+        "argument": "La necesidad de trascendencia explica el origen de las religiones.",
+        "refs": ["https://plato.stanford.edu/entries/religion-science/"],
+        "image": "",
+        "category": "idReligion",
+        "datareg": "2025-03-21 15:40:00",
+        "comments": [],
+        "popularity": 14,
+        "peopleInFavor": ["theologian", "rational_believer"],
+        "peopleAgaist": ["creationist", "bible_only"]
+    },
+    {
+        "idDebate": "rel002",
+        "username": "buddhist_thinker",
+        "nameDebate": "El karma no es justicia cósmica",
+        "argument": "El karma es causa-efecto, no un sistema de premios/castigos.",
+        "refs": ["https://www.accesstoinsight.org/ptf/kamma.html"],
+        "image": "",
+        "category": "idReligion",
+        "datareg": "2025-03-22 19:25:30",
+        "comments": [],
+        "popularity": 11,
+        "peopleInFavor": ["buddhist_thinker", "zen_master"],
+        "peopleAgaist": ["western_buddhist", "karma_enforcer"]
+    },
+    {
+        "idDebate": "rel003",
+        "username": "islamic_scholar",
+        "nameDebate": "La sharía es compatible con los DDHH",
+        "argument": "Interpretada correctamente, promueve justicia social y equidad.",
+        "refs": ["https://www.ohchr.org/en/human-rights"],
+        "image": "",
+        "category": "idReligion",
+        "datareg": "2025-03-23 21:10:45",
+        "comments": [
+        {
+            "idComment": "relcom003",
+            "paidComment": "",
+            "username": "secular_humanist",
+            "argument": "Ninguna ley religiosa puede estar por encima de los derechos universales.",
+            "likes": 250,
+            "dislikes": 90,
+            "position": false,
+            "datareg": "2025-03-23 22:05:20"
+        }
+        ],
+        "popularity": 17,
+        "peopleInFavor": ["islamic_scholar", "moderate_muslim"],
+        "peopleAgaist": ["secular_humanist", "ex_muslim"]
+    },
+    {
+        "idDebate": "rel004",
+        "username": "jesus_was_activist",
+        "nameDebate": "Jesús fue un revolucionario político",
+        "argument": "Expulsar mercaderes del templo fue un acto contra el poder económico.",
+        "refs": ["https://www.biblegateway.com/passage/?search=Juan+2%3A13-16"],
+        "image": "",
+        "category": "idReligion",
+        "datareg": "2025-03-24 07:50:10",
+        "comments": [],
+        "popularity": 13,
+        "peopleInFavor": ["jesus_was_activist", "liberation_theology"],
+        "peopleAgaist": ["conservative_christ", "vatican_loyalist"]
+    },
+    {
+        "idDebate": "rel005",
+        "username": "hindu_reformer",
+        "nameDebate": "El sistema de castas no es parte del hinduismo verdadero",
+        "argument": "Fue una distorsión posterior para mantener privilegios.",
+        "refs": ["https://www.hrw.org/reports/2001/globalcaste/caste0801.pdf"],
+        "image": "",
+        "category": "idReligion",
+        "datareg": "2025-03-25 20:30:00",
+        "comments": [],
+        "popularity": 16,
+        "peopleInFavor": ["hindu_reformer", "vedic_scholar"],
+        "peopleAgaist": ["caste_apologist", "traditionalist_hindu"]
+    },
+    {
+        "idDebate": "pol001",
+        "username": "democracy_now",
+        "nameDebate": "La democracia representativa está obsoleta",
+        "argument": "Debemos migrar a democracia líquida con votaciones digitales directas.",
+        "refs": ["https://www.economist.com/democracy/2023/04/20/is-representative-democracy-in-trouble"],
+        "image": "",
+        "category": "idPolicy",
+        "datareg": "2025-03-21 12:15:00",
+        "comments": [
+        {
+            "idComment": "polcom001",
+            "paidComment": "",
+            "username": "conservative_thinker",
+            "argument": "Sin representantes, las masas tomarán decisiones emocionales.",
+            "likes": 170,
+            "dislikes": 60,
+            "position": false,
+            "datareg": "2025-03-21 13:30:45"
+        }
+        ],
+        "popularity": 19,
+        "peopleInFavor": ["democracy_now", "tech_utopian"],
+        "peopleAgaist": ["conservative_thinker", "institutionalist"]
+    },
+    {
+        "idDebate": "pol002",
+        "username": "libertarian_here",
+        "nameDebate": "Los impuestos son robo",
+        "argument": "El Estado no tiene derecho a confiscar el producto de mi trabajo.",
+        "refs": ["https://mises.org/library/taxes-are-theft"],
+        "image": "",
+        "category": "idPolicy",
+        "datareg": "2025-03-22 16:40:20",
+        "comments": [],
+        "popularity": 23,
+        "peopleInFavor": ["libertarian_here", "anarcho_capitalist"],
+        "peopleAgaist": ["social_democrat", "keynesian_econ"]
+    },
+    {
+        "idDebate": "pol003",
+        "username": "feminist_policy",
+        "nameDebate": "Las cuotas de género son necesarias",
+        "argument": "Sin acción afirmativa, la igualdad tardaría 100 años más.",
+        "refs": ["https://www.unwomen.org/en/news/stories/2020/9/feature-why-gender-quotas-work"],
+        "image": "",
+        "category": "idPolicy",
+        "datareg": "2025-03-23 08:55:10",
+        "comments": [],
+        "popularity": 21,
+        "peopleInFavor": ["feminist_policy", "equality_now"],
+        "peopleAgaist": ["meritocracy_only", "anti_quota"]
+    },
+    {
+        "idDebate": "pol004",
+        "username": "globalist_101",
+        "nameDebate": "Las fronteras deben abolirse",
+        "argument": "Son un constructo artificial que perpetúa desigualdades globales.",
+        "refs": ["https://www.opendemocracy.net/en/beyond-trafficking-and-slavery/why-we-should-abolish-borders/"],
+        "image": "",
+        "category": "idPolicy",
+        "datareg": "2025-03-24 22:10:30",
+        "comments": [
+        {
+            "idComment": "polcom004",
+            "paidComment": "",
+            "username": "nationalist_leader",
+            "argument": "Sin fronteras no hay identidad ni seguridad nacional.",
+            "likes": 210,
+            "dislikes": 85,
+            "position": false,
+            "datareg": "2025-03-24 23:05:15"
+        }
+        ],
+        "popularity": 27,
+        "peopleInFavor": ["globalist_101", "cosmopolitan"],
+        "peopleAgaist": ["nationalist_leader", "patriot_76"]
+    },
+    {
+        "idDebate": "pol005",
+        "username": "eco_socialist",
+        "nameDebate": "El capitalismo destruirá el planeta",
+        "argument": "Solo un modelo eco-socialista puede evitar el colapso ecológico.",
+        "refs": ["https://monthlyreview.org/2020/07/01/why-ecosocialism/"],
+        "image": "",
+        "category": "idPolicy",
+        "datareg": "2025-03-25 11:25:40",
+        "comments": [],
+        "popularity": 24,
+        "peopleInFavor": ["eco_socialist", "degrowth_activist"],
+        "peopleAgaist": ["green_capitalist", "tech_optimist"]
+    },
+    {
+        "idDebate": "tech001",
+        "username": "crypto_evangelist",
+        "nameDebate": "El Bitcoin reemplazará al oro",
+        "argument": "Es el nuevo activo refugio en la era digital, con oferta limitada y descentralización.",
+        "refs": ["https://www.forbes.com/sites/forbesfinancecouncil/2021/03/25/bitcoin-is-the-new-gold-heres-why/"],
+        "image": "",
+        "category": "idTechnology",
+        "datareg": "2025-03-21 14:50:00",
+        "comments": [
+        {
+            "idComment": "techcom001",
+            "paidComment": "",
+            "username": "gold_lover",
+            "argument": "El oro tiene valor intrínseco y 5,000 años de historia.",
+            "likes": 190,
+            "dislikes": 70,
+            "position": false,
+            "datareg": "2025-03-21 15:30:20"
+        }
+        ],
+        "popularity": 28,
+        "peopleInFavor": ["crypto_evangelist", "decentralized_future"],
+        "peopleAgaist": ["gold_lover", "trad_investor"]
+    },
+    {
+        "idDebate": "tech002",
+        "username": "privacy_paranoid",
+        "nameDebate": "Las redes sociales son vigilancia masiva",
+        "argument": "Meta y Google monetizan nuestros datos íntimos con gobiernos y anunciantes.",
+        "refs": ["https://www.theguardian.com/technology/2021/oct/05/facebook-whistleblower-frances-haugen-congress"],
+        "image": "",
+        "category": "idTechnology",
+        "datareg": "2025-03-22 09:35:15",
+        "comments": [],
+        "popularity": 26,
+        "peopleInFavor": ["privacy_paranoid", "signal_user"],
+        "peopleAgaist": ["nothing_to_hide", "meta_employee"]
+    },
+    {
+        "idDebate": "tech003",
+        "username": "openai_critic",
+        "nameDebate": "ChatGPT nos hará perder habilidades cognitivas",
+        "argument": "Depender de IA para escribir/razonar atrofia nuestro cerebro.",
+        "refs": ["https://www.theatlantic.com/technology/archive/2023/03/chatgpt-writing-education-students-ai/673564/"],
+        "image": "",
+        "category": "idTechnology",
+        "datareg": "2025-03-23 19:20:40",
+        "comments": [],
+        "popularity": 22,
+        "peopleInFavor": ["openai_critic", "deep_thinker"],
+        "peopleAgaist": ["ai_cheerleader", "productivity_guru"]
+    },
+    {
+        "idDebate": "tech004",
+        "username": "quantum_enthusiast",
+        "nameDebate": "La computación cuántica romperá todas las criptomonedas",
+        "argument": "Su poder de cálculo hará obsoleta la criptografía actual en 10 años.",
+        "refs": ["https://www.technologyreview.com/2022/12/14/1064804/quantum-computers-cryptography/"],
+        "image": "",
+        "category": "idTechnology",
+        "datareg": "2025-03-24 13:45:50",
+        "comments": [
+        {
+            "idComment": "techcom004",
+            "paidComment": "",
+            "username": "crypto_dev",
+            "argument": "Ya existen algoritmos post-cuánticos en desarrollo.",
+            "likes": 160,
+            "dislikes": 40,
+            "position": false,
+            "datareg": "2025-03-24 14:30:10"
+        }
+        ],
+        "popularity": 20,
+        "peopleInFavor": ["quantum_enthusiast", "physics_lover"],
+        "peopleAgaist": ["crypto_dev", "blockchain_forever"]
+    },
+    {
+        "idDebate": "tech005",
+        "username": "ar_visionary",
+        "nameDebate": "El metaverso será más importante que internet",
+        "argument": "En 2030, trabajaremos, socializaremos y viviremos en mundos virtuales.",
+        "refs": ["https://www.wired.com/story/what-is-the-metaverse/"],
+        "image": "",
+        "category": "idTechnology",
+        "datareg": "2025-03-25 18:05:25",
+        "comments": [],
+        "popularity": 18,
+        "peopleInFavor": ["ar_visionary", "meta_investor"],
+        "peopleAgaist": ["real_worlder", "zuckerberg_skeptic"]
+    },
+    {
+        "idDebate": "pop001",
+        "username": "cinephile_88",
+        "nameDebate": "¿Marvel arruinó el cine?",
+        "argument": "Las películas de superhéroes priorizan efectos sobre guión, homogenizando la industria.",
+        "refs": ["https://www.theguardian.com/film/2022/oct/25/marvel-movies-ruining-cinema-martin-scorsese"],
+        "image": "",
+        "category": "idPopCulture",
+        "datareg": "2025-03-21 20:15:00",
+        "comments": [
+        {
+            "idComment": "popcom001",
+            "paidComment": "",
+            "username": "marvel_stan",
+            "argument": "Marvel democratizó el cine y lo hizo accesible a masas.",
+            "likes": 320,
+            "dislikes": 95,
+            "position": false,
+            "datareg": "2025-03-21 21:30:10"
+        }
+        ],
+        "popularity": 35,
+        "peopleInFavor": ["cinephile_88", "indie_filmmaker"],
+        "peopleAgaist": ["marvel_stan", "disney_plus"]
+    },
+    {
+        "idDebate": "pop002",
+        "username": "kpop_analyst",
+        "nameDebate": "El K-pop es más manufactura que arte",
+        "argument": "Las empresas controlan cada aspecto de los idols, desde su imagen hasta sus relaciones.",
+        "refs": ["https://www.vice.com/en/article/3ak8j8/the-dark-side-of-k-pop"],
+        "image": "",
+        "category": "idPopCulture",
+        "datareg": "2025-03-22 11:40:20",
+        "comments": [],
+        "popularity": 28,
+        "peopleInFavor": ["kpop_analyst", "music_purist"],
+        "peopleAgaist": ["army_forever", "kpop_global"]
+    },
+    {
+        "idDebate": "pop003",
+        "username": "gamer_critic",
+        "nameDebate": "Los videojuegos ya son el arte dominante",
+        "argument": "Combinan narrativa, música y participación activa, superando al cine y la literatura.",
+        "refs": ["https://www.newyorker.com/culture/cultural-comment/are-video-games-art"],
+        "image": "",
+        "category": "idPopCulture",
+        "datareg": "2025-03-23 22:05:45",
+        "comments": [],
+        "popularity": 30,
+        "peopleInFavor": ["gamer_critic", "esports_pro"],
+        "peopleAgaist": ["book_lover", "film_snob"]
+    },
+    {
+        "idDebate": "pop004",
+        "username": "taylor_swiftie",
+        "nameDebate": "Taylor Swift es la artista más influyente del siglo XXI",
+        "argument": "Revolucionó la industria musical con su poder de reinvención y negociación.",
+        "refs": ["https://www.rollingstone.com/music/music-features/taylor-swift-career-retrospective-1234686345/"],
+        "image": "",
+        "category": "idPopCulture",
+        "datareg": "2025-03-24 16:50:30",
+        "comments": [
+        {
+            "idComment": "popcom004",
+            "paidComment": "",
+            "username": "beyhive_member",
+            "argument": "Beyoncé hizo más por la cultura negra y el feminismo.",
+            "likes": 400,
+            "dislikes": 120,
+            "position": false,
+            "datareg": "2025-03-24 17:45:15"
+        }
+        ],
+        "popularity": 42,
+        "peopleInFavor": ["taylor_swiftie", "pop_historian"],
+        "peopleAgaist": ["beyhive_member", "rock_purist"]
+    },
+    {
+        "idDebate": "pop005",
+        "username": "netflix_skeptic",
+        "nameDebate": "El binge-watching arruinó las series",
+        "argument": "Ver 10 capítulos en un día mata el debate cultural y la anticipación.",
+        "refs": ["https://www.theatlantic.com/culture/archive/2021/11/netflix-binge-watching-tv/620710/"],
+        "image": "",
+        "category": "idPopCulture",
+        "datareg": "2025-03-25 10:20:00",
+        "comments": [],
+        "popularity": 25,
+        "peopleInFavor": ["netflix_skeptic", "slow_tv"],
+        "peopleAgaist": ["binge_lover", "algorithm_fan"]
+    },
+    {
+        "idDebate": "consp001",
+        "username": "ufo_researcher",
+        "nameDebate": "El gobierno oculta tecnología extraterrestre",
+        "argument": "El Área 51 y los recientes informes OVNI de la NASA son evidencia.",
+        "refs": ["https://www.nytimes.com/2020/07/23/us/politics/pentagon-ufo-program.html"],
+        "image": "",
+        "category": "idConspiracies",
+        "datareg": "2025-03-21 23:30:00",
+        "comments": [
+        {
+            "idComment": "concom001",
+            "paidComment": "",
+            "username": "skeptic_101",
+            "argument": "No hay pruebas físicas, solo testimonios ambiguos.",
+            "likes": 180,
+            "dislikes": 200,
+            "position": false,
+            "datareg": "2025-03-22 00:45:20"
+        }
+        ],
+        "popularity": 40,
+        "peopleInFavor": ["ufo_researcher", "ancient_aliens"],
+        "peopleAgaist": ["skeptic_101", "nasa_official"]
+    },
+    {
+        "idDebate": "consp002",
+        "username": "bigpharma_whistle",
+        "nameDebate": "Las farmacéuticas ocultan curas para mantenernos enfermos",
+        "argument": "Es más rentable tratar síntomas que erradicar enfermedades.",
+        "refs": ["https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3170078/"],
+        "image": "",
+        "category": "idConspiracies",
+        "datareg": "2025-03-22 14:15:10",
+        "comments": [],
+        "popularity": 38,
+        "peopleInFavor": ["bigpharma_whistle", "natural_healer"],
+        "peopleAgaist": ["medical_doctor", "science_4all"]
+    },
+    {
+        "idDebate": "consp003",
+        "username": "chemtrails_observer",
+        "nameDebate": "Los chemtrails son un experimento de control climático",
+        "argument": "Las estelas persistentes de aviones no son condensación, contienen químicos.",
+        "refs": ["https://www.scientificamerican.com/article/contrails-vs-chemtrails/"],
+        "image": "",
+        "category": "idConspiracies",
+        "datareg": "2025-03-23 19:50:30",
+        "comments": [],
+        "popularity": 33,
+        "peopleInFavor": ["chemtrails_observer", "sky_watcher"],
+        "peopleAgaist": ["atmospheric_sci", "climate_realist"]
+    },
+    {
+        "idDebate": "consp004",
+        "username": "illuminati_expert",
+        "nameDebate": "El Nuevo Orden Mundial ya controla los gobiernos",
+        "argument": "Grupos como el Foro de Davos manipulan crisis para centralizar poder.",
+        "refs": ["https://www.weforum.org/great-reset/"],
+        "image": "",
+        "category": "idConspiracies",
+        "datareg": "2025-03-24 08:25:40",
+        "comments": [
+        {
+            "idComment": "concom004",
+            "paidComment": "",
+            "username": "economics_prof",
+            "argument": "Es solo cooperación global, no conspiración.",
+            "likes": 150,
+            "dislikes": 300,
+            "position": false,
+            "datareg": "2025-03-24 09:10:15"
+        }
+        ],
+        "popularity": 45,
+        "peopleInFavor": ["illuminati_expert", "truth_seeker_76"],
+        "peopleAgaist": ["economics_prof", "globalist_ally"]
+    },
+    {
+        "idDebate": "consp005",
+        "username": "moon_landing_hoax",
+        "nameDebate": "El hombre nunca llegó a la Luna",
+        "argument": "Las fotos de la NASA tienen inconsistencias físicas y de iluminación.",
+        "refs": ["https://www.history.com/news/moon-landing-fake-conspiracy-theories"],
+        "image": "",
+        "category": "idConspiracies",
+        "datareg": "2025-03-25 21:05:50",
+        "comments": [],
+        "popularity": 50,
+        "peopleInFavor": ["moon_landing_hoax", "kubrick_fan"],
+        "peopleAgaist": ["nasa_engineer", "physics_teacher"]
+    },
+    {
+        "idDebate": "soc001",
+        "username": "mentalhealth_advocate",
+        "nameDebate": "Las redes sociales causan la epidemia de ansiedad juvenil",
+        "argument": "Estudios muestran correlación entre uso de Instagram y depresión en adolescentes.",
+        "refs": ["https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7364393/"],
+        "image": "",
+        "category": "idSocial",
+        "datareg": "2025-03-21 10:30:00",
+        "comments": [
+        {
+            "idComment": "soccom001",
+            "paidComment": "",
+            "username": "digital_native",
+            "argument": "El problema es el mal uso, no las plataformas en sí.",
+            "likes": 220,
+            "dislikes": 80,
+            "position": false,
+            "datareg": "2025-03-21 11:45:30"
+        }
+        ],
+        "popularity": 29,
+        "peopleInFavor": ["mentalhealth_advocate", "psychologist_phd"],
+        "peopleAgaist": ["digital_native", "tech_optimist"]
+    },
+    {
+        "idDebate": "soc002",
+        "username": "universal_income",
+        "nameDebate": "La RBU es la única solución a la automatización",
+        "argument": "Con IA eliminando empleos, necesitamos un piso económico básico.",
+        "refs": ["https://www.brookings.edu/research/automation-and-artificial-intelligence/"],
+        "image": "",
+        "category": "idSocial",
+        "datareg": "2025-03-22 17:20:15",
+        "comments": [],
+        "popularity": 27,
+        "peopleInFavor": ["universal_income", "future_economist"],
+        "peopleAgaist": ["capitalist_thinker", "hard_work_ethic"]
+    },
+    {
+        "idDebate": "soc003",
+        "username": "cancel_culture_critic",
+        "nameDebate": "La cultura de la cancelación fomenta censura, no justicia",
+        "argument": "Juicios públicos sin debido proceso destruyen carreras por errores del pasado.",
+        "refs": ["https://www.theatlantic.com/ideas/archive/2020/07/problem-cancel-culture/614086/"],
+        "image": "",
+        "category": "idSocial",
+        "datareg": "2025-03-23 12:40:50",
+        "comments": [],
+        "popularity": 31,
+        "peopleInFavor": ["cancel_culture_critic", "free_speech_absolutist"],
+        "peopleAgaist": ["social_justice_warrior", "woke_activist"]
+    },
+    {
+        "idDebate": "soc004",
+        "username": "gentrification_expert",
+        "nameDebate": "La gentrificación es colonialismo urbano",
+        "argument": "Expulsa a comunidades originarias para beneficiar a elites económicas.",
+        "refs": ["https://www.theguardian.com/cities/2015/nov/25/gentrification-colonialism-city-urbanisation"],
+        "image": "",
+        "category": "idSocial",
+        "datareg": "2025-03-24 19:15:25",
+        "comments": [
+        {
+            "idComment": "soccom004",
+            "paidComment": "",
+            "username": "urban_developer",
+            "argument": "Revitaliza zonas degradadas y genera empleo local.",
+            "likes": 190,
+            "dislikes": 110,
+            "position": false,
+            "datareg": "2025-03-24 20:00:40"
+        }
+        ],
+        "popularity": 26,
+        "peopleInFavor": ["gentrification_expert", "anti_capitalist"],
+        "peopleAgaist": ["urban_developer", "city_planner"]
+    },
+    {
+        "idDebate": "soc005",
+        "username": "childfree_by_choice",
+        "nameDebate": "No tener hijos es un acto climático responsable",
+        "argument": "Un niño menos reduce 58 toneladas de CO2 anuales.",
+        "refs": ["https://www.theguardian.com/environment/2017/jul/12/want-to-fight-climate-change-have-fewer-children"],
+        "image": "",
+        "category": "idSocial",
+        "datareg": "2025-03-25 15:30:10",
+        "comments": [],
+        "popularity": 23,
+        "peopleInFavor": ["childfree_by_choice", "climate_activist"],
+        "peopleAgaist": ["traditional_family", "natalism_advocate"]
+    },
+    {
+        "idDebate": "hist001",
+        "username": "revisionist_historian",
+        "nameDebate": "Colón fue un genocida, no un héroe",
+        "argument": "Sus diarios prueban que esclavizó y masacró a los taínos por oro.",
+        "refs": ["https://www.history.com/news/christopher-columbus-disease-genocide"],
+        "image": "",
+        "category": "idHistory",
+        "datareg": "2025-03-21 08:45:00",
+        "comments": [
+        {
+            "idComment": "histcom001",
+            "paidComment": "",
+            "username": "history_purist",
+            "argument": "Juzgar el pasado con valores actuales es anacrónico.",
+            "likes": 210,
+            "dislikes": 150,
+            "position": false,
+            "datareg": "2025-03-21 09:30:20"
+        }
+        ],
+        "popularity": 22,
+        "peopleInFavor": ["revisionist_historian", "decolonial_thinker"],
+        "peopleAgaist": ["history_purist", "eurocentric_view"]
+    },
+    {
+        "idDebate": "hist002",
+        "username": "ww2_researcher",
+        "nameDebate": "Sin EE.UU., los nazis habrían ganado la WWII",
+        "argument": "El poder industrial estadounidense fue clave para derrotar a Alemania.",
+        "refs": ["https://www.nationalww2museum.org/war/articles/world-war-ii-allies"],
+        "image": "",
+        "category": "idHistory",
+        "datareg": "2025-03-22 13:25:30",
+        "comments": [],
+        "popularity": 19,
+        "peopleInFavor": ["ww2_researcher", "military_historian"],
+        "peopleAgaist": ["soviet_heroism", "uk_stood_alone"]
+    },
+    {
+        "idDebate": "hist003",
+        "username": "roman_empire_fan",
+        "nameDebate": "Roma cayó por su decadencia moral, no invasiones",
+        "argument": "Corrupción, desigualdad y pérdida de valores la hicieron vulnerable.",
+        "refs": ["https://www.britannica.com/story/8-reasons-why-rome-fell"],
+        "image": "",
+        "category": "idHistory",
+        "datareg": "2025-03-23 18:10:45",
+        "comments": [],
+        "popularity": 17,
+        "peopleInFavor": ["roman_empire_fan", "traditional_values"],
+        "peopleAgaist": ["economic_historian", "barbarian_ally"]
+    },
+    {
+        "idDebate": "hist004",
+        "username": "egyptology_skeptic",
+        "nameDebate": "Las pirámides no las construyeron esclavos",
+        "argument": "Evidencia muestra trabajadores especializados y bien alimentados.",
+        "refs": ["https://www.nationalgeographic.com/history/article/giza-pyramids"],
+        "image": "",
+        "category": "idHistory",
+        "datareg": "2025-03-24 07:50:15",
+        "comments": [
+        {
+            "idComment": "histcom004",
+            "paidComment": "",
+            "username": "bible_historian",
+            "argument": "La Biblia menciona esclavos hebreos en Egipto.",
+            "likes": 130,
+            "dislikes": 90,
+            "position": false,
+            "datareg": "2025-03-24 08:35:40"
+        }
+        ],
+        "popularity": 20,
+        "peopleInFavor": ["egyptology_skeptic", "archaeology_phd"],
+        "peopleAgaist": ["bible_historian", "old_testament"]
+    },
+    {
+        "idDebate": "hist005",
+        "username": "cold_war_expert",
+        "nameDebate": "La URSS habría colapsado incluso sin Reagan",
+        "argument": "Su economía era insostenible por ineficiencia y gasto militar.",
+        "refs": ["https://www.wilsoncenter.org/publication/why-did-the-soviet-union-collapse"],
+        "image": "",
+        "category": "idHistory",
+        "datareg": "2025-03-25 21:40:00",
+        "comments": [],
+        "popularity": 18,
+        "peopleInFavor": ["cold_war_expert", "marxist_economist"],
+        "peopleAgaist": ["reagan_legacy", "anti_imperialist"]
+    },
+    {
+        "idDebate": "econ001",
+        "username": "bitcoin_maxi",
+        "nameDebate": "El Bitcoin reemplazará a los bancos centrales",
+        "argument": "Dinero descentralizado es inmune a inflación y control estatal.",
+        "refs": ["https://www.investopedia.com/terms/b/bitcoin.asp"],
+        "image": "",
+        "category": "idEconomy",
+        "datareg": "2025-03-21 11:55:10",
+        "comments": [
+        {
+            "idComment": "econcom001",
+            "paidComment": "",
+            "username": "keynesian_econ",
+            "argument": "Sin política monetaria, las crisis serán inmanejables.",
+            "likes": 240,
+            "dislikes": 110,
+            "position": false,
+            "datareg": "2025-03-21 12:40:30"
+        }
+        ],
+        "popularity": 32,
+        "peopleInFavor": ["bitcoin_maxi", "crypto_anarchist"],
+        "peopleAgaist": ["keynesian_econ", "fed_official"]
+    },
+    {
+        "idDebate": "econ002",
+        "username": "post_capitalist",
+        "nameDebate": "El capitalismo colapsará en 20 años",
+        "argument": "La automatización y crisis climática harán insostenible el modelo.",
+        "refs": ["https://www.theguardian.com/books/2020/apr/18/postcapitalism-end-of-capitalism-begun"],
+        "image": "",
+        "category": "idEconomy",
+        "datareg": "2025-03-22 16:30:20",
+        "comments": [],
+        "popularity": 28,
+        "peopleInFavor": ["post_capitalist", "degrowth_advocate"],
+        "peopleAgaist": ["free_marketeer", "tech_optimist"]
+    },
+    {
+        "idDebate": "econ003",
+        "username": "china_analyst",
+        "nameDebate": "China superará a EE.UU. como potencia económica en 2030",
+        "argument": "Su crecimiento anual del 5% y control estatal lo hacen inevitable.",
+        "refs": ["https://www.pwc.com/gx/en/issues/economy/the-world-in-2050.html"],
+        "image": "",
+        "category": "idEconomy",
+        "datareg": "2025-03-23 20:15:40",
+        "comments": [],
+        "popularity": 25,
+        "peopleInFavor": ["china_analyst", "global_east"],
+        "peopleAgaist": ["america_first", "western_supremacy"]
+    },
+    {
+        "idDebate": "econ004",
+        "username": "ubi_activist",
+        "nameDebate": "La renta básica reduciría la pobreza a cero",
+        "argument": "Experimentos en Finlandia y Kenia muestran mejoras en salud y educación.",
+        "refs": ["https://www.brookings.edu/research/universal-basic-income/"],
+        "image": "",
+        "category": "idEconomy",
+        "datareg": "2025-03-24 09:50:15",
+        "comments": [
+        {
+            "idComment": "econcom004",
+            "paidComment": "",
+            "username": "fiscal_conservative",
+            "argument": "Es insostenible financieramente y desincentiva el trabajo.",
+            "likes": 200,
+            "dislikes": 160,
+            "position": false,
+            "datareg": "2025-03-24 10:35:20"
+        }
+        ],
+        "popularity": 30,
+        "peopleInFavor": ["ubi_activist", "social_democrat"],
+        "peopleAgaist": ["fiscal_conservative", "libertarian_econ"]
+    },
+    {
+        "idDebate": "econ005",
+        "username": "anti_amazon",
+        "nameDebate": "Los monopolios tech destruyen la economía local",
+        "argument": "Amazon mata pequeños negocios y evade impuestos con paraísos fiscales.",
+        "refs": ["https://www.theatlantic.com/technology/archive/2019/12/amazons-effect-on-small-businesses/603439/"],
+        "image": "",
+        "category": "idEconomy",
+        "datareg": "2025-03-25 14:20:30",
+        "comments": [],
+        "popularity": 27,
+        "peopleInFavor": ["anti_amazon", "shop_local"],
+        "peopleAgaist": ["amazon_prime", "consumer_choice"]
+    },
+    {
+        "idDebate": "other001",
+        "username": "dream_interpreter",
+        "nameDebate": "Los sueños predicen el futuro",
+        "argument": "Casos documentados muestran sueños con eventos antes de ocurrir.",
+        "refs": ["https://www.psychologytoday.com/us/blog/dream-factory/201409/can-dreams-predict-the-future"],
+        "image": "",
+        "category": "idOthers",
+        "datareg": "2025-03-21 22:10:00",
+        "comments": [
+        {
+            "idComment": "othercom001",
+            "paidComment": "",
+            "username": "neuroscientist",
+            "argument": "Es solo el cerebro procesando información subconsciente.",
+            "likes": 170,
+            "dislikes": 120,
+            "position": false,
+            "datareg": "2025-03-21 23:05:15"
+        }
+        ],
+        "popularity": 21,
+        "peopleInFavor": ["dream_interpreter", "paranormal_expert"],
+        "peopleAgaist": ["neuroscientist", "skeptic_101"]
+    },
+    {
+        "idDebate": "other002",
+        "username": "flat_earth_teacher",
+        "nameDebate": "La Tierra es plana: evidencia ignorada",
+        "argument": "El horizonte siempre se ve plano y no hay curvatura en fotos de satélite.",
+        "refs": ["https://www.livescience.com/24310-flat-earth-belief.html"],
+        "image": "",
+        "category": "idOthers",
+        "datareg": "2025-03-22 12:45:40",
+        "comments": [],
+        "popularity": 45,
+        "peopleInFavor": ["flat_earth_teacher", "nasa_liar"],
+        "peopleAgaist": ["physics_prof", "space_enthusiast"]
+    },
+    {
+        "idDebate": "other003",
+        "username": "time_travel_enthusiast",
+        "nameDebate": "Los viajes en tiempo ya ocurren en secreto",
+        "argument": "Proyectos como Montauk y testimonios de 'saltadores' lo prueban.",
+        "refs": ["https://www.history.com/news/time-travel-experiments-montauk-project"],
+        "image": "",
+        "category": "idOthers",
+        "datareg": "2025-03-23 15:30:20",
+        "comments": [],
+        "popularity": 38,
+        "peopleInFavor": ["time_travel_enthusiast", "cia_whistleblower"],
+        "peopleAgaist": ["einstein_was_right", "causal_order"]
+    },
+    {
+        "idDebate": "other004",
+        "username": "mandela_effect",
+        "nameDebate": "El efecto Mandela prueba universos paralelos",
+        "argument": "Millones recuerdan cosas que nunca ocurrieron (ej: Berenstain Bears).",
+        "refs": ["https://www.medicalnewstoday.com/articles/mandela-effect"],
+        "image": "",
+        "category": "idOthers",
+        "datareg": "2025-03-24 18:55:10",
+        "comments": [
+        {
+            "idComment": "othercom004",
+            "paidComment": "",
+            "username": "memory_scientist",
+            "argument": "Es solo falla en la memoria colectiva, no física cuántica.",
+            "likes": 190,
+            "dislikes": 140,
+            "position": false,
+            "datareg": "2025-03-24 19:40:30"
+        }
+        ],
+        "popularity": 33,
+        "peopleInFavor": ["mandela_effect", "quantum_leaper"],
+        "peopleAgaist": ["memory_scientist", "ocd_historian"]
+    },
+    {
+        "idDebate": "other005",
+        "username": "life_on_mars",
+        "nameDebate": "NASA oculta fósiles marcianos",
+        "argument": "Las fotos de rovers muestran estructuras que parecen huesos y artefactos.",
+        "refs": ["https://www.space.com/33690-all-mars-life-claims.html"],
+        "image": "",
+        "category": "idOthers",
+        "datareg": "2025-03-25 23:15:50",
+        "comments": [],
+        "popularity": 40,
+        "peopleInFavor": ["life_on_mars", "anomaly_hunter"],
+        "peopleAgaist": ["nasa_scientist", "pareidolia_expert"]
+    },
+    {
+        "idDebate": "sports001",
+        "username": "soccer_analyst",
+        "nameDebate": "El fútbol está arruinado por el dinero",
+        "argument": "Los clubes con dueños billonarios (ej: Manchester City) matan la competitividad.",
+        "refs": ["https://www.theguardian.com/football/2023/feb/07/how-manchester-city-became-the-most-dominant-force-in-football"],
+        "image": "",
+        "category": "idSports",
+        "datareg": "2025-03-21 14:20:00",
+        "comments": [
+        {
+            "idComment": "sportscom001",
+            "paidComment": "",
+            "username": "premier_league_fan",
+            "argument": "El dinero eleva la calidad del juego y atrae a más fans.",
+            "likes": 450,
+            "dislikes": 120,
+            "position": false,
+            "datareg": "2025-03-21 15:35:10"
+        }
+        ],
+        "popularity": 35,
+        "peopleInFavor": ["soccer_analyst", "romantic_football"],
+        "peopleAgaist": ["premier_league_fan", "oil_club_supporter"]
+    },
+    {
+        "idDebate": "sports002",
+        "username": "olympic_purist",
+        "nameDebate": "Los eSports no deberían ser olímpicos",
+        "argument": "Los deportes requieren esfuerzo físico, no solo habilidad con un joystick.",
+        "refs": ["https://www.olympic.org/es/deportes"],
+        "image": "",
+        "category": "idSports",
+        "datareg": "2025-03-22 19:10:30",
+        "comments": [],
+        "popularity": 28,
+        "peopleInFavor": ["olympic_purist", "traditional_athlete"],
+        "peopleAgaist": ["gamer_olympian", "digital_sport"]
+    },
+    {
+        "idDebate": "sports003",
+        "username": "nba_heretic",
+        "nameDebate": "Michael Jordan está sobrevalorado",
+        "argument": "Jugó en una era sin defensa física y con menos talento global que Lebron.",
+        "refs": ["https://www.espn.com/nba/story/_/id/29152457/lebron-james-vs-michael-jordan-greatest-debate"],
+        "image": "",
+        "category": "idSports",
+        "datareg": "2025-03-23 11:45:50",
+        "comments": [
+        {
+            "idComment": "sportscom003",
+            "paidComment": "",
+            "username": "jordan_legacy",
+            "argument": "6 anillos en 6 finales sin superequipos > 4 anillos con superteams.",
+            "likes": 600,
+            "dislikes": 200,
+            "position": false,
+            "datareg": "2025-03-23 12:30:20"
+        }
+        ],
+        "popularity": 50,
+        "peopleInFavor": ["nba_heretic", "lebron_stan"],
+        "peopleAgaist": ["jordan_legacy", "90s_nostalgic"]
+    },
+    {
+        "idDebate": "sports004",
+        "username": "doping_whistle",
+        "nameDebate": "El 80% de los atletas olímpicos usa PEDs",
+        "argument": "Los avances en dopaje van 10 años adelante de los controles.",
+        "refs": ["https://www.reuters.com/article/idUSKCN1M12HX/"],
+        "image": "",
+        "category": "idSports",
+        "datareg": "2025-03-24 16:30:15",
+        "comments": [],
+        "popularity": 40,
+        "peopleInFavor": ["doping_whistle", "clean_sport"],
+        "peopleAgaist": ["olympic_hero", "tested_athlete"]
+    },
+    {
+        "idDebate": "sports005",
+        "username": "f1_environmentalist",
+        "nameDebate": "La F1 debería prohibirse por su impacto climático",
+        "argument": "Quemar miles de litros de gasolina por diversión es irresponsable en 2025.",
+        "refs": ["https://www.bbc.com/news/science-environment-48908341"],
+        "image": "",
+        "category": "idSports",
+        "datareg": "2025-03-25 21:05:40",
+        "comments": [
+        {
+            "idComment": "sportscom005",
+            "paidComment": "",
+            "username": "f1_engineer",
+            "argument": "La F1 impulsa innovación en motores eficientes que luego usan todos.",
+            "likes": 300,
+            "dislikes": 150,
+            "position": false,
+            "datareg": "2025-03-25 22:15:00"
+        }
+        ],
+        "popularity": 33,
+        "peopleInFavor": ["f1_environmentalist", "green_activist"],
+        "peopleAgaist": ["f1_engineer", "speed_lover"]
+    }
+]

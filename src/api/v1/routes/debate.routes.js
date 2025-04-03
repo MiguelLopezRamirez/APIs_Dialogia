@@ -18,4 +18,7 @@ router.post('/:id/comments', debateController.addComment);
 router.post('/:id/vote-in-favor', debateController.voteInFavor);
 router.post('/:id/vote-against', debateController.voteAgainst);
 
+// Acciones para producción
+router.post('/debates', debateController.createDebates)
+
 export default router;
