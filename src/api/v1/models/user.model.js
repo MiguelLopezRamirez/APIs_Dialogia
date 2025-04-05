@@ -1,5 +1,5 @@
 const { db } = require('../../../config/firebase.config');
-const { collection, query, where, getDocs } = require('firebase/firestore');
+const { collection, query, where, getDocs, getDoc, doc } = require('firebase/firestore');
 
 // Definimos la referencia a la colección primero
 const usersCollection = db ? collection(db, 'users') : null;
@@ -37,22 +37,20 @@ class User {
     );
   }
 
-  // Método estático para buscar por username
-  static async findByUsername(username) {
+  // Método estático para buscar por uid
+  static async findByUid(uid) {
     if (!usersCollection) {
       throw new Error('Firestore not initialized');
     }
     
-    const q = query(usersCollection, where('username', '==', username));
-    const querySnapshot = await getDocs(q);
+    const userRef = doc(usersCollection, uid);
+    const userSnap = await getDoc(userRef);
     
-    if (querySnapshot.empty) {
+    if (!userSnap.exists()) {
       return null;
     }
     
-    // Asumimos que username es único
-    const doc = querySnapshot.docs[0];
-    return this.fromFirestore(doc);
+    return this.fromFirestore(userSnap);
   }
 }
 

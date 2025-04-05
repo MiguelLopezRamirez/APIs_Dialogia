@@ -3,16 +3,16 @@ import userController from '../controllers/user.controller';
 
 const router = express.Router();
 
-// Obtener usuario por username
-router.get('/:username', userController.getUserByUsername);
+// Obtener usuario por uid
+router.get('/:uid', userController.getUserByUid);
 
 // Agregar intereses (puede ser primera vez o adicionales)
-router.post('/:username/interests', userController.addUserInterests);
+router.post('/:uid/interests', userController.addUserInterests);
 
 // Actualizar todos los intereses (reemplaza el array completo)
-router.put('/:username/interests', userController.updateUserInterests);
+router.put('/:uid/interests', userController.updateUserInterests);
 
 // Eliminar intereses específicos
-router.delete('/:username/interests', userController.removeUserInterests);
+router.delete('/:uid/interests', userController.removeUserInterests);
 
 export default router;

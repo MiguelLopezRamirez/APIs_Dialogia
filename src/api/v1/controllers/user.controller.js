@@ -9,11 +9,11 @@ const {
 } = require('firebase/firestore');
 
 const userController = {
-  // Obtener usuario por username
-  getUserByUsername: async (req, res) => {
+  // Obtener usuario por uid
+  getUserByUid: async (req, res) => {
     try {
-      const { username } = req.params;
-      const user = await User.findByUsername(username);
+      const { uid } = req.params;
+      const user = await User.findByUid(uid);
       
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -25,10 +25,10 @@ const userController = {
     }
   },
 
-  // Agregar intereses a un usuario por username
+  // Agregar intereses a un usuario por uid
   addUserInterests: async (req, res) => {
     try {
-      const { username } = req.params;
+      const { uid } = req.params;
       const { interests } = req.body;
       
       // Validaciones
@@ -36,8 +36,8 @@ const userController = {
         return res.status(400).json({ error: 'Interests must be a non-empty array' });
       }
 
-      // Buscar usuario por username
-      const user = await User.findByUsername(username);
+      // Buscar usuario por uid
+      const user = await User.findByUid(uid);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -66,14 +66,14 @@ const userController = {
       }
 
       // Actualizar el usuario
-      const userRef = doc(usersCollection, user.uid);
+      const userRef = doc(usersCollection, uid);
       await updateDoc(userRef, {
         interests: arrayUnion(...validInterests),
         updatedAt: new Date()
       });
 
       // Obtener el usuario actualizado para devolverlo
-      const updatedUser = await User.findByUsername(username);
+      const updatedUser = await User.findByUid(uid);
 
       res.status(200).json({
         message: 'Interests added successfully',
@@ -84,10 +84,10 @@ const userController = {
     }
   },
 
-  // Actualizar todos los intereses del usuario por username
+  // Actualizar todos los intereses del usuario por uid
   updateUserInterests: async (req, res) => {
     try {
-      const { username } = req.params;
+      const { uid } = req.params;
       const { interests } = req.body;
       
       // Validaciones
@@ -95,21 +95,21 @@ const userController = {
         return res.status(400).json({ error: 'Interests must be an array' });
       }
 
-      // Buscar usuario por username
-      const user = await User.findByUsername(username);
+      // Buscar usuario por uid
+      const user = await User.findByUid(uid);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
 
       // Si no hay intereses, simplemente actualizamos con array vacío
       if (interests.length === 0) {
-        const userRef = doc(usersCollection, user.uid);
+        const userRef = doc(usersCollection, uid);
         await updateDoc(userRef, {
           interests: [],
           updatedAt: new Date()
         });
 
-        const updatedUser = await User.findByUsername(username);
+        const updatedUser = await User.findByUid(uid);
         return res.status(200).json({
           message: 'Interests updated successfully (empty)',
           user: updatedUser
@@ -140,14 +140,14 @@ const userController = {
       }
 
       // Actualizar el usuario con los nuevos intereses
-      const userRef = doc(usersCollection, user.uid);
+      const userRef = doc(usersCollection, uid);
       await updateDoc(userRef, {
         interests: validInterests,
         updatedAt: new Date()
       });
 
       // Obtener el usuario actualizado para devolverlo
-      const updatedUser = await User.findByUsername(username);
+      const updatedUser = await User.findByUid(uid);
 
       res.status(200).json({
         message: 'Interests updated successfully',
@@ -158,10 +158,10 @@ const userController = {
     }
   },
 
-  // Eliminar intereses específicos de un usuario por username
+  // Eliminar intereses específicos de un usuario por uid
   removeUserInterests: async (req, res) => {
     try {
-      const { username } = req.params;
+      const { uid } = req.params;
       const { interests } = req.body;
       
       // Validaciones
@@ -169,21 +169,21 @@ const userController = {
         return res.status(400).json({ error: 'Interests must be a non-empty array' });
       }
 
-      // Buscar usuario por username
-      const user = await User.findByUsername(username);
+      // Buscar usuario por uid
+      const user = await User.findByUid(uid);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
 
       // Actualizar el usuario eliminando los intereses
-      const userRef = doc(usersCollection, user.uid);
+      const userRef = doc(usersCollection, uid);
       await updateDoc(userRef, {
         interests: arrayRemove(...interests),
         updatedAt: new Date()
       });
 
       // Obtener el usuario actualizado para devolverlo
-      const updatedUser = await User.findByUsername(username);
+      const updatedUser = await User.findByUid(uid);
 
       res.status(200).json({
         message: 'Interests removed successfully',
