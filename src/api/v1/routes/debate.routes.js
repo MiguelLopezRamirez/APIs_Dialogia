@@ -15,8 +15,7 @@ router.delete('/:id', debateController.deleteDebate);
 
 // Acciones específicas
 router.post('/:id/comments', debateController.addComment);
-router.post('/:id/vote-in-favor', debateController.voteInFavor);
-router.post('/:id/vote-against', debateController.voteAgainst);
+router.post('/:id/vote', debateController.vote);
 
 // Acciones para producción
 router.post('/debates', debateController.createDebates)
