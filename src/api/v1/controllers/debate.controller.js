@@ -305,46 +305,59 @@ getDebateById: async (req, res) => {
     }
   },
 
-  // Añadir comentario a un debate
-  addComment: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { username, comment } = req.body;
-     
-      if (!username || !comment) {
-        return res.status(400).json({ error: 'Usuario y comentario son requeridos' });
+ // Añadir comentario a un debate 
+  addComment: async (req, res) => { 
+    try { 
+      const { id } = req.params; 
+      const { username, comment } = req.body; 
+
+      if (!username || !comment) { 
+        return res.status(400).json({ error: 'Usuario y comentario son requeridos' }); 
+      } 
+
+      const docRef = doc(debatesCollection, id); 
+      const docSnap = await getDoc(docRef); 
+
+      if (!docSnap.exists()) { 
+        return res.status(404).json({ error: 'Debate no encontrado' }); 
+      } 
+
+      const debateData = docSnap.data();
+      let userPosition = null;
+      if (debateData.peopleInFavor.includes(username)) {
+        userPosition = "InFavor";
+      } else if (debateData.peopleAgaist.includes(username)) {
+        userPosition = "Agaist";
+      } else {
+        // El usuario no ha votado, por lo tanto no se permite comentar
+        return res.status(400).json({ error: 'Debe votar antes de comentar' });
       }
 
-      const docRef = doc(debatesCollection, id);
-      const docSnap = await getDoc(docRef);
-     
-      if (!docSnap.exists()) {
-        return res.status(404).json({ error: 'Debate no encontrado' });
-      }
+      const newComment = { 
+        username, 
+        comment, 
+        position: userPosition, 
+        createdAt: serverTimestamp() 
+      }; 
 
-      const newComment = {
-        username,
-        comment,
-        createdAt: serverTimestamp()
-      };
+      await updateDoc(docRef, { 
+        comments: arrayUnion(newComment), 
+        popularity: increment(1) 
+      }); 
 
-      await updateDoc(docRef, {
-        comments: arrayUnion(newComment),
-        popularity: increment(1)
-      });
+      // Obtener el debate actualizado para devolver el comentario con timestamp 
+      const updatedSnap = await getDoc(docRef); 
+      const updatedDebate = Debate.fromFirestore(updatedSnap); 
+      const createdComment = updatedDebate.comments.find(c =>  
+        c.username === username && c.comment === comment 
+      ); 
 
-      // Obtener el debate actualizado para devolver el comentario con timestamp
-      const updatedSnap = await getDoc(docRef);
-      const updatedDebate = Debate.fromFirestore(updatedSnap);
-      const createdComment = updatedDebate.comments.find(c => 
-        c.username === username && c.comment === comment
-      );
-
-      res.status(200).json(createdComment || newComment);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
+      res.status(200).json(createdComment || newComment); 
+    } catch (error) { 
+      res.status(500).json({ error: error.message }); 
+    } 
   },
+
 
   // Votar un debate
   vote: async (req, res) => {
