@@ -430,26 +430,31 @@ getDebateById: async (req, res) => {
   getDebatesByCategory: async (req, res) => {
     try {
       const { categoryId } = req.params;
-      const { sort = 'recent' } = req.query;
-      // const sort = 'ancient'
-      // Verificar que la categoría exista
-      const categoryRef = doc(categoriesCollection, categoryId);
-      const categorySnap = await getDoc(categoryRef);
-     
-      if (!categorySnap.exists()) {
-        return res.status(404).json({ error: 'Categoría no encontrada' });
-      }
+      const { sort = 'active', search = '' } = req.query; // Añadir search
+  
+      // 1. Validar que la categoría exista
+    const categoryRef = doc(categoriesCollection, categoryId);
+    const categorySnap = await getDoc(categoryRef);
+    if (!categorySnap.exists()) {
+      return res.status(404).json({ error: 'Categoría no encontrada' });
+    }
 
-      const q = query(
-        debatesCollection,
-        where('category', '==', categoryId)
-      );
-     
-      const querySnapshot = await getDocs(q);
-      let debates = querySnapshot.docs.map(doc => {
-        const debate = Debate.fromFirestore(doc);
-        return debate
+    // 2. Obtener y procesar debates
+    const q = query(debatesCollection, where('category', '==', categoryId));
+    const querySnapshot = await getDocs(q);
+
+    let debates = querySnapshot.docs
+      .map(doc => Debate.fromFirestore(doc))
+      .filter(debate => {
+        if (!search) return true; // Si no hay búsqueda, incluir todos
+        
+        const searchTerm = search.toLowerCase();
+        const titleMatch = debate.title?.toLowerCase().includes(searchTerm) ?? false;
+        const argumentMatch = debate.argument?.toLowerCase().includes(searchTerm) ?? false;
+        
+        return titleMatch || argumentMatch;
       });
+  
       // Ordenamiento
       switch (sort) {
         case 'active':
@@ -459,14 +464,14 @@ getDebateById: async (req, res) => {
           debates = debates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
           break;
         case 'ancient':
-          debates = debates.sort((a, b) => a.datareg - b.datareg); // Resta directa de objetos Date
+          debates = debates.sort((a, b) => a.datareg - b.datareg);
           break;
         case 'recent':
         default:
-          debates = debates.sort((a, b) => b.datareg - a.datareg); // Resta directa de objetos Date
+          debates = debates.sort((a, b) => b.datareg - a.datareg);
           break;
       }
-
+  
       res.status(200).json(debates);
     } catch (error) {
       res.status(500).json({ error: error.message });
