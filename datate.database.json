@@ -1016,8 +1016,8 @@
             "paidComment": "",
             "username": "memory_scientist",
             "argument": "Es solo falla en la memoria colectiva, no física cuántica.",
-            "likes": 190,
-            "dislikes": 140,
+            "likes": ["Carloyoli"],
+            "dislikes": ["gelo002"],
             "position": false,
             "datareg": "2025-03-24 19:40:30"
         }
