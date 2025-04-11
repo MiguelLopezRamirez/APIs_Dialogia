@@ -362,9 +362,9 @@ getDebateById: async (req, res) => {
 addComment: async (req, res) => {
   try {
     const { id } = req.params;                  // idDebate
-    const { username, argument, position, refs = [] } = req.body;
+    const { username, argument, position, refs = [], image = ""} = req.body;
 
-    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs });
+    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs, image });
 
     if (!username || !argument || position === undefined || position === null) {
       console.warn("WARN: Falta username o argument");
@@ -398,6 +398,7 @@ addComment: async (req, res) => {
       position: userPosition,
       datareg: new Date().toISOString(),
       refs,   // guardamos aquí las referencias
+      image,
     };
 
     console.debug("DEBUG: newComment:", newComment);
