@@ -429,37 +429,32 @@ getDebateById: async (req, res) => {
     // 2. Obtener y procesar debates
     const q = query(debatesCollection, where('category', '==', categoryId));
     const querySnapshot = await getDocs(q);
+    const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
+    const searchTerm = search.toLowerCase();
+    let filteredDebates = debatesData.filter(debate => 
+      debate.nameDebate.toLowerCase().includes(searchTerm) || 
+      debate.argument.toLowerCase().includes(searchTerm)
+    );
 
-    let debates = querySnapshot.docs
-      .map(doc => Debate.fromFirestore(doc))
-      .filter(debate => {
-        if (!search) return true; // Si no hay búsqueda, incluir todos
-        
-        const searchTerm = search.toLowerCase();
-        const titleMatch = debate.title?.toLowerCase().includes(searchTerm) ?? false;
-        const argumentMatch = debate.argument?.toLowerCase().includes(searchTerm) ?? false;
-        
-        return titleMatch || argumentMatch;
-      });
   
       // Ordenamiento
       switch (sort) {
         case 'active':
-          debates = debates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+          filteredDebates = filteredDebates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
           break;
         case 'popular':
-          debates = debates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+          filteredDebates = filteredDebates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
           break;
         case 'ancient':
-          debates = debates.sort((a, b) => a.datareg - b.datareg);
+          filteredDebates = filteredDebates.sort((a, b) => a.datareg - b.datareg);
           break;
         case 'recent':
         default:
-          debates = debates.sort((a, b) => b.datareg - a.datareg);
+          filteredDebates = filteredDebates.sort((a, b) => b.datareg - a.datareg);
           break;
       }
   
-      res.status(200).json(debates);
+      res.status(200).json(filteredDebates);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -492,24 +487,45 @@ getDebateById: async (req, res) => {
   searchDebates: async (req, res) => {
     try {
       let { term } = req.query;
-     
+      
       if (!term) {
         return res.status(400).json({ error: 'Término de búsqueda es requerido' });
       }
-     
+      
       term = term.toLowerCase();
-     
-      const q = query(debatesCollection);
-      const querySnapshot = await getDocs(q);
-     
-      const debates = querySnapshot.docs
-        .map(doc => Debate.fromFirestore(doc))
-        .filter(debate => 
-          debate.nameDebate.toLowerCase().includes(term) || 
-          debate.argument.toLowerCase().includes(term)
-        )
-        .map(debate => debate.toJSON());
-     
+      
+      const querySnapshot = await getDocs(debatesCollection);
+      const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
+      
+      // Filtrar debates por término de búsqueda
+      const filteredDebates = debatesData.filter(debate => 
+        debate.nameDebate.toLowerCase().includes(term) || 
+        debate.argument.toLowerCase().includes(term)
+      );
+      
+      // Obtener IDs únicos de categorías de los debates filtrados
+      const categoryIds = [...new Set(filteredDebates.map(debate => debate.category))];
+      
+      // Buscar todas las categorías en paralelo
+      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+      const categorySnapshots = await Promise.all(categoryPromises);
+      
+      // Crear mapa de ID a nombre
+      const categoryMap = {};
+      categorySnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const category = Category.fromFirestore(snap);
+          categoryMap[snap.id] = category.name;
+        }
+      });
+      
+      // Reemplazar IDs con nombres y convertir a JSON
+      const debates = filteredDebates.map(debate => {
+        const json = debate.toJSON();
+        json.category = categoryMap[debate.category] || null;
+        return json;
+      });
+      
       res.status(200).json(debates);
     } catch (error) {
       res.status(500).json({ error: error.message });
