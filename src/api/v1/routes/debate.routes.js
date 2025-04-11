@@ -1,5 +1,5 @@
 import express from 'express';
-import debateController from '../controllers/debate.controller';
+import debateController, { addComment, likesAndDislikes } from '../controllers/debate.controller';
 
 const router = express.Router();
 
@@ -15,6 +15,7 @@ router.delete('/:id', debateController.deleteDebate);
 
 // Acciones específicas
 router.post('/:id/comments', debateController.addComment);
+router.patch('/:id/comments/:idComment/like',likesAndDislikes);
 router.post('/:id/vote', debateController.vote);
 
 // Acciones para producción

@@ -213,6 +213,59 @@ getAllDebates: async (req, res) => {
   }
 },
 
+// Endpoint para actualizar likes o dislikes de un comentario
+likesAndDislikes: async (req, res) => {
+  const { id, idComment } = req.params;
+  const { action, method } = req.body; // action: "like" o "dislike", method: "add" o "remove"
+
+  if (!['like', 'dislike'].includes(action) || !['add', 'remove'].includes(method)) {
+    return res.status(400).json({ error: 'Acción o método inválido' });
+  }
+
+  try {
+    // Obtén la referencia y el snapshot del debate en Firestore
+    const debateRef = doc(debatesCollection, id);
+    const debateSnap = await getDoc(debateRef);
+    
+    if (!debateSnap.exists()) {
+      return res.status(404).json({ error: 'Debate no encontrado' });
+    }
+    
+    // Extrae los datos del debate
+    const debateData = debateSnap.data();
+
+    // Busca el índice del comentario
+    const commentIndex = debateData.comments.findIndex(c => c.idComment === idComment);
+    if (commentIndex === -1) {
+      return res.status(404).json({ error: 'Comentario no encontrado' });
+    }
+    
+    // Inicializa contadores si no existen
+    debateData.comments[commentIndex].likes = debateData.comments[commentIndex].likes || 0;
+    debateData.comments[commentIndex].dislikes = debateData.comments[commentIndex].dislikes || 0;
+
+    // Actualiza el contador según la acción y el método recibido
+    if (action === 'like') {
+      debateData.comments[commentIndex].likes = 
+        method === 'add'
+          ? debateData.comments[commentIndex].likes + 1
+          : Math.max(debateData.comments[commentIndex].likes - 1, 0);
+    } else if (action === 'dislike') {
+      debateData.comments[commentIndex].dislikes = 
+        method === 'add'
+          ? debateData.comments[commentIndex].dislikes + 1
+          : Math.max(debateData.comments[commentIndex].dislikes - 1, 0);
+    }
+    
+    // Guarda los cambios en Firestore
+    await updateDoc(debateRef, { comments: debateData.comments });
+    res.json(debateData.comments[commentIndex]);
+  } catch (error) {
+    console.error('Error al actualizar comentario:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+},
+
 // Obtener debate por ID
 getDebateById: async (req, res) => {
   try {
@@ -305,59 +358,64 @@ getDebateById: async (req, res) => {
     }
   },
 
- // Añadir comentario a un debate 
-  addComment: async (req, res) => { 
-    try { 
-      const { id } = req.params; 
-      const { username, comment } = req.body; 
+// Añadir comentario a un debate (método completo actualizado)
+addComment: async (req, res) => {
+  try {
+    const { id } = req.params;                  // idDebate
+    const { username, argument, position, refs = [] } = req.body;
 
-      if (!username || !comment) { 
-        return res.status(400).json({ error: 'Usuario y comentario son requeridos' }); 
-      } 
+    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs });
 
-      const docRef = doc(debatesCollection, id); 
-      const docSnap = await getDoc(docRef); 
+    if (!username || !argument || !position) {
+      console.warn("WARN: Falta username o argument");
+      return res.status(400).json({ error: "Usuario y comentario son requeridos" });
+    }
 
-      if (!docSnap.exists()) { 
-        return res.status(404).json({ error: 'Debate no encontrado' }); 
-      } 
+    const docRef = doc(debatesCollection, id);
+    const docSnap = await getDoc(docRef);
+    if (!docSnap.exists()) {
+      console.warn("WARN: Debate no encontrado:", id);
+      return res.status(404).json({ error: "Debate no encontrado" });
+    }
 
-      const debateData = docSnap.data();
-      let userPosition = null;
-      if (debateData.peopleInFavor.includes(username)) {
-        userPosition = "InFavor";
-      } else if (debateData.peopleAgaist.includes(username)) {
-        userPosition = "Agaist";
-      } else {
-        // El usuario no ha votado, por lo tanto no se permite comentar
-        return res.status(400).json({ error: 'Debe votar antes de comentar' });
-      }
+    const debateData = docSnap.data();
+    let userPosition;
+    if (debateData.peopleInFavor.includes(username)) userPosition = true;
+    else if (debateData.peopleAgaist.includes(username)) userPosition = false;
+    else {
+      console.warn("WARN: Usuario no ha votado:", username);
+      return res.status(400).json({ error: "Debe votar antes de comentar" });
+    }
 
-      const newComment = { 
-        username, 
-        comment, 
-        position: userPosition, 
-        createdAt: serverTimestamp() 
-      }; 
+    const newComment = {
+      idComment: `auto_${Date.now()}`,
+      paidComment: "",
+      username,
+      argument,
+      likes: 0,
+      dislikes: 0,
+      position: userPosition,
+      datareg: new Date().toISOString(),
+      refs,   // guardamos aquí las referencias
+    };
 
-      await updateDoc(docRef, { 
-        comments: arrayUnion(newComment), 
-        popularity: increment(1) 
-      }); 
+    console.debug("DEBUG: newComment:", newComment);
 
-      // Obtener el debate actualizado para devolver el comentario con timestamp 
-      const updatedSnap = await getDoc(docRef); 
-      const updatedDebate = Debate.fromFirestore(updatedSnap); 
-      const createdComment = updatedDebate.comments.find(c =>  
-        c.username === username && c.comment === comment 
-      ); 
+    await updateDoc(docRef, {
+      comments: arrayUnion(newComment),
+      popularity: increment(1),
+    });
 
-      res.status(200).json(createdComment || newComment); 
-    } catch (error) { 
-      res.status(500).json({ error: error.message }); 
-    } 
-  },
+    const updatedSnap = await getDoc(docRef);
+    const updatedDebate = Debate.fromFirestore(updatedSnap);
+    const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
 
+    return res.status(200).json(created || newComment);
+  } catch (error) {
+    console.error("ERROR en addComment:", error);
+    return res.status(500).json({ error: error.message });
+  }
+},
 
   // Votar un debate
   vote: async (req, res) => {
@@ -425,6 +483,38 @@ getDebateById: async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   },
+
+  // addComment: async (req, res) => {
+  //   try {
+  //     const { id } = req.params; // ID del debate
+  //     const { username, text, refs, position } = req.body; // position: true para "A Favor", false para "En Contra"
+
+  //     // Validar campos obligatorios
+  //     if (!username || !text) {
+  //       return res.status(400).json({ error: "El nombre de usuario y el comentario son requeridos" });
+  //     }
+
+  //     // Construir el objeto comentario
+  //     const comment = {
+  //       username,
+  //       text,
+  //       refs: refs || [], // refs es un arreglo de referencias (URLs)
+  //       position, // valor booleano: true significa "A Favor", false "En Contra"
+  //       createdAt: serverTimestamp()
+  //     };
+
+  //     // Suponiendo que cada debate tiene una subcolección 'comments'
+  //     const commentsCollectionRef = collection(db, "debates", id, "comments");
+  //     const docRef = await addDoc(commentsCollectionRef, comment);
+
+  //     // Opcionalmente, puedes devolver el ID generado
+  //     comment.id = docRef.id;
+
+  //     res.status(201).json(comment);
+  //   } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // },
 
   // Buscar debates por categoría
   getDebatesByCategory: async (req, res) => {
