@@ -419,7 +419,7 @@ addComment: async (req, res) => {
 },
 
   // Votar un debate
-  vote: async (req, res) => {
+  position: async (req, res) => {
     try {
       const { id } = req.params;
       const { username, position } = req.body; // position: "InFavor", "Agaist" o null

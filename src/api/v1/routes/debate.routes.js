@@ -16,7 +16,7 @@ router.delete('/:id', debateController.deleteDebate);
 // Acciones específicas
 router.post('/:id/comments', debateController.addComment);
 router.patch('/:id/comments/:idComment/like',likesAndDislikes);
-router.post('/:id/vote', debateController.vote);
+router.post('/:id/position', debateController.position);
 
 // Acciones para producción
 router.post('/debates', debateController.createDebates)
