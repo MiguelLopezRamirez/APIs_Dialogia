@@ -366,7 +366,7 @@ addComment: async (req, res) => {
 
     console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs });
 
-    if (!username || !argument || !position) {
+    if (!username || !argument || position === undefined || position === null) {
       console.warn("WARN: Falta username o argument");
       return res.status(400).json({ error: "Usuario y comentario son requeridos" });
     }
@@ -384,6 +384,7 @@ addComment: async (req, res) => {
     else if (debateData.peopleAgaist.includes(username)) userPosition = false;
     else {
       console.warn("WARN: Usuario no ha votado:", username);
+      console.log(debateData);
       return res.status(400).json({ error: "Debe votar antes de comentar" });
     }
 
