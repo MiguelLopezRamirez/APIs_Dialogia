@@ -290,7 +290,10 @@ getDebateById: async (req, res) => {
       debate.category = null; // o mantener el ID si prefieres
     }
 
-    res.status(200).json(debate.toJSON());
+    const responseData = debate.toJSON();
+    responseData.bestArgument = getBestArgument(debate.comments);
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -635,6 +638,22 @@ addComment: async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   }
+};
+
+const getBestArgument = (comments) => {
+  if (!comments || comments.length === 0) return null;
+  
+  const bestComment = comments.reduce((prev, current) => 
+    (prev.likes > current.likes) ? prev : current
+  );
+  
+  return {
+    idComment: bestComment.idComment,
+    argument: bestComment.argument,
+    likes: bestComment.likes,
+    position: bestComment.position,
+    username: bestComment.username
+  };
 };
 
 module.exports = debateController;
