@@ -21,4 +21,7 @@ router.post('/:id/position', debateController.position);
 // Acciones para producción
 router.post('/debates', debateController.createDebates)
 
+//
+// responder debate
+router.post('/:id/comments/reply', debateController.addReplyComment);
 export default router;

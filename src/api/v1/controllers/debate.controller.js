@@ -59,7 +59,7 @@ const debateController = {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  },
+  }, 
 
   createDebates: async(req, res) =>{
     try {
@@ -589,6 +589,72 @@ addComment: async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   },
+
+  // debate.controller.js (agregar este nuevo método)
+addReplyComment: async (req, res) => {
+  try {
+    const { id } = req.params; // ID del debate
+    const { paidComment, username, argument, position, refs = [] } = req.body;
+
+    // Validaciones
+    if (!paidComment || !username || !argument || position === undefined) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+
+    const debateRef = doc(debatesCollection, id);
+    const debateSnap = await getDoc(debateRef);
+    
+    if (!debateSnap.exists()) {
+      return res.status(404).json({ error: 'Debate no encontrado' });
+    }
+
+    const debateData = debateSnap.data();
+    
+    // Verificar que el comentario padre existe
+    const parentComment = debateData.comments.find(c => c.idComment === paidComment);
+    if (!parentComment) {
+      return res.status(404).json({ error: 'Comentario padre no encontrado' });
+    }
+
+    // Verificar que el usuario haya votado (como en addComment)
+    let userPosition;
+    if (debateData.peopleInFavor.includes(username)) userPosition = true;
+    else if (debateData.peopleAgaist.includes(username)) userPosition = false;
+    else {
+      return res.status(400).json({ error: 'Debe votar antes de comentar' });
+    }
+
+    // Crear nuevo comentario de respuesta
+    const newReply = {
+      idComment: `auto_${Date.now()}`,
+      paidComment, // Aquí asignamos el ID del comentario padre
+      username,
+      argument,
+      likes: 0,
+      dislikes: 0,
+      position: userPosition, // Hereda la posición del usuario
+      datareg: new Date().toISOString(),
+      refs
+    };
+
+    // Actualizar el debate agregando el nuevo comentario
+    await updateDoc(debateRef, {
+      comments: arrayUnion(newReply),
+      popularity: increment(1) // Aumentar popularidad como en los comentarios normales
+    });
+
+    // Obtener el debate actualizado para devolver el comentario creado
+    const updatedSnap = await getDoc(debateRef);
+    const updatedDebate = Debate.fromFirestore(updatedSnap);
+    const createdReply = updatedDebate.comments.find(c => c.idComment === newReply.idComment);
+
+    res.status(201).json(createdReply || newReply);
+
+  } catch (error) {
+    console.error('Error en addReplyComment:', error);
+    res.status(500).json({ error: error.message });
+  }
+},
 
   // Buscar debates por término
   searchDebates: async (req, res) => {
