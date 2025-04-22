@@ -13,11 +13,12 @@ class Debate {
     this.refs = refs;
     this.comments = [];
     this.popularity = 0;
-    this.peopleInFavor = [username]; // El creador automáticamente está a favor
+    this.peopleInFavor = [username];
     this.peopleAgaist = [];
+    this.moderationStatus = 'PENDING'; // PENDING, APPROVED, CENSORED, DELETED
+    this.moderationReason = '';
   }
 
-  // Método para convertir a objeto plano para Firestore
   toFirestore() {
     return {
       nameDebate: this.nameDebate,
@@ -30,11 +31,12 @@ class Debate {
       comments: this.comments,
       popularity: this.popularity,
       peopleInFavor: this.peopleInFavor,
-      peopleAgaist: this.peopleAgaist
+      peopleAgaist: this.peopleAgaist,
+      moderationStatus: this.moderationStatus,
+      moderationReason: this.moderationReason
     };
   }
 
-  // Método estático para crear desde Firestore
   static fromFirestore(doc) {
     const data = doc.data();
     const debate = new Debate(
@@ -47,17 +49,17 @@ class Debate {
       data.image || ''
     );
     
-    // Manejo especial de campos que pueden cambiar después de la creación
     debate.datareg = data.datareg?.toDate?.() || new Date();
     debate.comments = data.comments || [];
     debate.popularity = data.popularity || 0;
     debate.peopleInFavor = data.peopleInFavor || [data.username];
     debate.peopleAgaist = data.peopleAgaist || [];
+    debate.moderationStatus = data.moderationStatus || 'APPROVED';
+    debate.moderationReason = data.moderationReason || '';
     
     return debate;
   }
 
-  // Método para convertir a objeto JSON (útil para respuestas API)
   toJSON() {
     return {
       idDebate: this.idDebate,
@@ -71,13 +73,18 @@ class Debate {
       comments: this.comments,
       popularity: this.popularity,
       peopleInFavor: this.peopleInFavor,
-      peopleAgaist: this.peopleAgaist
+      peopleAgaist: this.peopleAgaist,
+      moderationStatus: this.moderationStatus,
+      moderationReason: this.moderationReason
     };
   }
 }
 
-// Exportamos tanto la clase como la referencia a la colección
+// Exportar también la colección de censura
+const censoredCollection = db ? collection(db, 'censoredContent') : null;
+
 module.exports = {
   Debate,
-  debatesCollection: db ? collection(db, 'debates') : null
+  debatesCollection: db ? collection(db, 'debates') : null,
+  censoredCollection
 };
