@@ -1,7 +1,6 @@
-const { Debate, debatesCollection,censoredCollection } = require('../models/debate.model');
-const geminiService = require('../services/gemini.service');
+const { Debate, debatesCollection } = require('../models/debate.model');
 const { Category, categoriesCollection } = require('../models/category.model');
-const {addDoc,
+const {
   doc,
   setDoc,
   getDoc,
@@ -19,57 +18,26 @@ const {addDoc,
   serverTimestamp
 } = require('firebase/firestore');
 
-async function logCensoredContent({ type, contentId, debateId, commentId, content, username, reason, categories }) {
-  if (!censoredCollection) return;
-  
-  const censoredDoc = {
-    type,
-    contentId,
-    debateId: type === 'COMMENT' ? debateId : null,
-    originalContent: content,
-    username,
-    reason,
-    categories,
-    timestamp: serverTimestamp()
-  };
-  
-  await addDoc(censoredCollection, censoredDoc);
-}
 const debateController = {
-
-
   // Crear debate
   createDebate: async (req, res) => {
     try {
       const { nameDebate, argument, category, username, refs = [], image = '' } = req.body;
-      
+     
       // Validaciones
       if (!nameDebate || !argument || !category || !username) {
         return res.status(400).json({ error: 'Nombre, argumento, categoría y usuario son requeridos' });
       }
-  
-      // Verificar categoría
+
+      // Verificar que la categoría exista
       const categoryRef = doc(categoriesCollection, category);
       const categorySnap = await getDoc(categoryRef);
-      
+     
       if (!categorySnap.exists()) {
         return res.status(400).json({ error: 'La categoría no existe' });
       }
-  
-      // Moderar contenido con Gemini
-      const contentToModerate = `${nameDebate}\n\n${argument}`;
-      const moderationResult = await geminiService.moderateContent(contentToModerate);
-      
-      // Manejar decisiones de moderación
-      if (moderationResult.decision === 'ELIMINADO') {
-        return res.status(403).json({ 
-          error: 'El contenido viola nuestras normas',
-          reason: moderationResult.reason,
-          categories: moderationResult.flaggedCategories
-        });
-      }
-  
-      // Crear debate
+
+      // Crear nuevo debate
       const newDebateRef = doc(debatesCollection);
       const newDebate = new Debate(
         newDebateRef.id,
@@ -80,31 +48,13 @@ const debateController = {
         refs,
         image
       );
-  
-      // Aplicar estado de moderación
-      if (moderationResult.decision === 'CENSURADO') {
-        newDebate.moderationStatus = 'CENSORED';
-        newDebate.moderationReason = moderationResult.reason;
-        
-        // Registrar en colección de censura
-        await logCensoredContent({
-          type: 'DEBATE',
-          contentId: newDebateRef.id,
-          content: contentToModerate,
-          username,
-          reason: moderationResult.reason,
-          categories: moderationResult.flaggedCategories
-        });
-      } else {
-        newDebate.moderationStatus = 'APPROVED';
-      }
-  
+
       await setDoc(newDebateRef, newDebate.toFirestore());
-  
-      // Obtener debate creado
+
+      // Obtener el debate recién creado para incluir el timestamp resuelto
       const createdDebateSnap = await getDoc(newDebateRef);
       const createdDebate = Debate.fromFirestore(createdDebateSnap);
-  
+
       res.status(201).json(createdDebate.toJSON());
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -414,43 +364,33 @@ getDebateById: async (req, res) => {
 // Añadir comentario a un debate (método completo actualizado)
 addComment: async (req, res) => {
   try {
-    const { id } = req.params; // ID del debate
+    const { id } = req.params;                  // idDebate
     const { username, argument, position, refs = [] } = req.body;
 
-    // Validaciones
+    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs });
+
     if (!username || !argument || position === undefined || position === null) {
+      console.warn("WARN: Falta username o argument");
       return res.status(400).json({ error: "Usuario y comentario son requeridos" });
     }
 
     const docRef = doc(debatesCollection, id);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
+      console.warn("WARN: Debate no encontrado:", id);
       return res.status(404).json({ error: "Debate no encontrado" });
     }
 
     const debateData = docSnap.data();
-    
-    // Verificar posición del usuario
     let userPosition;
     if (debateData.peopleInFavor.includes(username)) userPosition = true;
     else if (debateData.peopleAgaist.includes(username)) userPosition = false;
     else {
+      console.warn("WARN: Usuario no ha votado:", username);
+      console.log(debateData);
       return res.status(400).json({ error: "Debe votar antes de comentar" });
     }
 
-    // Moderar comentario con Gemini
-    const moderationResult = await geminiService.moderateContent(argument);
-    
-    // Manejar decisiones de moderación
-    if (moderationResult.decision === 'ELIMINADO') {
-      return res.status(403).json({ 
-        error: 'El comentario viola nuestras normas',
-        reason: moderationResult.reason,
-        categories: moderationResult.flaggedCategories
-      });
-    }
-
-    // Crear comentario
     const newComment = {
       idComment: `auto_${Date.now()}`,
       paidComment: "",
@@ -460,23 +400,10 @@ addComment: async (req, res) => {
       dislikes: 0,
       position: userPosition,
       datareg: new Date().toISOString(),
-      refs,
-      moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
-      moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
+      refs,   // guardamos aquí las referencias
     };
 
-    // Registrar comentario censurado si aplica
-    if (moderationResult.decision === 'CENSURADO') {
-      await logCensoredContent({
-        type: 'COMMENT',
-        contentId: newComment.idComment,
-        debateId: id,
-        content: argument,
-        username,
-        reason: moderationResult.reason,
-        categories: moderationResult.flaggedCategories
-      });
-    }
+    console.debug("DEBUG: newComment:", newComment);
 
     await updateDoc(docRef, {
       comments: arrayUnion(newComment),
@@ -489,6 +416,7 @@ addComment: async (req, res) => {
 
     return res.status(200).json(created || newComment);
   } catch (error) {
+    console.error("ERROR en addComment:", error);
     return res.status(500).json({ error: error.message });
   }
 },
@@ -663,92 +591,70 @@ addComment: async (req, res) => {
   },
 
   // debate.controller.js (agregar este nuevo método)
-  addReplyComment: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { paidComment, username, argument, position, refs = [] } = req.body;
-  
-      if (!paidComment || !username || !argument || position === undefined) {
-        return res.status(400).json({ error: 'Todos los campos son requeridos' });
-      }
-  
-      const debateRef = doc(debatesCollection, id);
-      const debateSnap = await getDoc(debateRef);
-      
-      if (!debateSnap.exists()) {
-        return res.status(404).json({ error: 'Debate no encontrado' });
-      }
-  
-      const debateData = debateSnap.data();
-      
-      // Verificar comentario padre
-      const parentComment = debateData.comments.find(c => c.idComment === paidComment);
-      if (!parentComment) {
-        return res.status(404).json({ error: 'Comentario padre no encontrado' });
-      }
-  
-      // Verificar posición del usuario
-      let userPosition;
-      if (debateData.peopleInFavor.includes(username)) userPosition = true;
-      else if (debateData.peopleAgaist.includes(username)) userPosition = false;
-      else {
-        return res.status(400).json({ error: 'Debe votar antes de comentar' });
-      }
-  
-      // Moderar respuesta con Gemini
-      const moderationResult = await geminiService.moderateContent(argument);
-      
-      if (moderationResult.decision === 'ELIMINADO') {
-        return res.status(403).json({ 
-          error: 'La respuesta viola nuestras normas',
-          reason: moderationResult.reason,
-          categories: moderationResult.flaggedCategories
-        });
-      }
-  
-      // Crear respuesta
-      const newReply = {
-        idComment: `auto_${Date.now()}`,
-        paidComment,
-        username,
-        argument,
-        likes: 0,
-        dislikes: 0,
-        position: userPosition,
-        datareg: new Date().toISOString(),
-        refs,
-        moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
-        moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
-      };
-  
-      // Registrar respuesta censurada si aplica
-      if (moderationResult.decision === 'CENSURADO') {
-        await logCensoredContent({
-          type: 'COMMENT',
-          contentId: newReply.idComment,
-          debateId: id,
-          content: argument,
-          username,
-          reason: moderationResult.reason,
-          categories: moderationResult.flaggedCategories
-        });
-      }
-  
-      await updateDoc(debateRef, {
-        comments: arrayUnion(newReply),
-        popularity: increment(1)
-      });
-  
-      const updatedSnap = await getDoc(debateRef);
-      const updatedDebate = Debate.fromFirestore(updatedSnap);
-      const createdReply = updatedDebate.comments.find(c => c.idComment === newReply.idComment);
-  
-      res.status(201).json(createdReply || newReply);
-  
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+addReplyComment: async (req, res) => {
+  try {
+    const { id } = req.params; // ID del debate
+    const { paidComment, username, argument, position, refs = [] } = req.body;
+
+    // Validaciones
+    if (!paidComment || !username || !argument || position === undefined) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
-  },
+
+    const debateRef = doc(debatesCollection, id);
+    const debateSnap = await getDoc(debateRef);
+    
+    if (!debateSnap.exists()) {
+      return res.status(404).json({ error: 'Debate no encontrado' });
+    }
+
+    const debateData = debateSnap.data();
+    
+    // Verificar que el comentario padre existe
+    const parentComment = debateData.comments.find(c => c.idComment === paidComment);
+    if (!parentComment) {
+      return res.status(404).json({ error: 'Comentario padre no encontrado' });
+    }
+
+    // Verificar que el usuario haya votado (como en addComment)
+    let userPosition;
+    if (debateData.peopleInFavor.includes(username)) userPosition = true;
+    else if (debateData.peopleAgaist.includes(username)) userPosition = false;
+    else {
+      return res.status(400).json({ error: 'Debe votar antes de comentar' });
+    }
+
+    // Crear nuevo comentario de respuesta
+    const newReply = {
+      idComment: `auto_${Date.now()}`,
+      paidComment, // Aquí asignamos el ID del comentario padre
+      username,
+      argument,
+      likes: 0,
+      dislikes: 0,
+      position: userPosition, // Hereda la posición del usuario
+      datareg: new Date().toISOString(),
+      refs
+    };
+
+    // Actualizar el debate agregando el nuevo comentario
+    await updateDoc(debateRef, {
+      comments: arrayUnion(newReply),
+      popularity: increment(1) // Aumentar popularidad como en los comentarios normales
+    });
+
+    // Obtener el debate actualizado para devolver el comentario creado
+    const updatedSnap = await getDoc(debateRef);
+    const updatedDebate = Debate.fromFirestore(updatedSnap);
+    const createdReply = updatedDebate.comments.find(c => c.idComment === newReply.idComment);
+
+    res.status(201).json(createdReply || newReply);
+
+  } catch (error) {
+    console.error('Error en addReplyComment:', error);
+    res.status(500).json({ error: error.message });
+  }
+},
 
   // Buscar debates por término
   searchDebates: async (req, res) => {

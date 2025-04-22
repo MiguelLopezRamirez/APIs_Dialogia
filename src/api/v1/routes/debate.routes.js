@@ -24,10 +24,4 @@ router.post('/debates', debateController.createDebates)
 //
 // responder debate
 router.post('/:id/comments/reply', debateController.addReplyComment);
-
-/*
-router.get('/moderation/pending', debateController.getPendingModeration);
-router.patch('/:id/moderation', debateController.updateModerationStatus);
-router.patch('/comments/:commentId/moderation', debateController.updateCommentModerationStatus);
-*/
 export default router;
