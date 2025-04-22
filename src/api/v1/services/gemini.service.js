@@ -2,7 +2,7 @@ const axios = require('axios');
 
 class GeminiService {
   constructor(apiKey) {
-    this.apiKey = apiKey || 'AIzaSyB1xnFmIHcdodrKU6n9si4WDWHsTj2K5bk';
+    this.apiKey = apiKey || process.env.GEMINI_API_KEY;
     this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   }
 
