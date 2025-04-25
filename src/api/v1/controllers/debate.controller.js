@@ -101,7 +101,12 @@ const debateController = {
       }
   
       await setDoc(newDebateRef, newDebate.toFirestore());
-  
+      
+      //Auto-follow
+      await updateDoc(newDebateRef, {
+        followers: arrayUnion(username),
+      });
+
       // Obtener debate creado
       const createdDebateSnap = await getDoc(newDebateRef);
       const createdDebate = Debate.fromFirestore(createdDebateSnap);
@@ -176,7 +181,11 @@ const debateController = {
         // Añadir operación al batch
         const debateRef = doc(debatesCollection, debateId);
         batch.set(debateRef, newDebate.toFirestore());
-  
+        
+        batch.update(debateRef, {
+          followers: arrayUnion(username)
+        });
+
         createdDebates.push(newDebate);
       }
   
@@ -487,19 +496,20 @@ addComment: async (req, res) => {
     const updatedDebate = Debate.fromFirestore(updatedSnap);
     const { username: owner, nameDebate, followers = [] } = updatedDebate;
     console.log("debate", updatedDebate);
-    await createNotification(
-      debateData.username,
-      `${username} ha comentado tu debate “${debateData.nameDebate}”`
-    );
+
     // Preparamos lista de destinatarios (dueño + cada follower)
     const recipients = Array.from(new Set([owner, ...followers]));
-    const texto = `${username} ha comentado en “${nameDebate}”`;
-
+    const debateId = updatedDebate.idDebate;
     // Creamos notificación para cada uno
     await Promise.all(
-      recipients.map(user =>
-        createNotification(user, texto)
-    ));
+      recipients.map(user => {
+        const isOwner = user === owner;
+        const texto = isOwner
+          ? `${username} ha comentado en tu debate “${nameDebate}”`
+          : `${username} ha comentado en el debate “${nameDebate}”`;
+        return createNotification(user, texto, debateId);
+      })
+    );
  
     const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
     
