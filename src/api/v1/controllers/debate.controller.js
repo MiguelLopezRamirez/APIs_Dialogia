@@ -1,5 +1,6 @@
 const { Debate, debatesCollection,censoredCollection } = require('../models/debate.model');
 const geminiService = require('../services/gemini.service');
+const { createNotification } = require('../services/notification.service');
 const { Category, categoriesCollection } = require('../models/category.model');
 const {addDoc,
   doc,
@@ -100,7 +101,12 @@ const debateController = {
       }
   
       await setDoc(newDebateRef, newDebate.toFirestore());
-  
+      
+      //Auto-follow
+      await updateDoc(newDebateRef, {
+        followers: arrayUnion(username),
+      });
+
       // Obtener debate creado
       const createdDebateSnap = await getDoc(newDebateRef);
       const createdDebate = Debate.fromFirestore(createdDebateSnap);
@@ -175,7 +181,11 @@ const debateController = {
         // Añadir operación al batch
         const debateRef = doc(debatesCollection, debateId);
         batch.set(debateRef, newDebate.toFirestore());
-  
+        
+        batch.update(debateRef, {
+          followers: arrayUnion(username)
+        });
+
         createdDebates.push(newDebate);
       }
   
@@ -482,11 +492,27 @@ addComment: async (req, res) => {
       comments: arrayUnion(newComment),
       popularity: increment(1),
     });
-
     const updatedSnap = await getDoc(docRef);
     const updatedDebate = Debate.fromFirestore(updatedSnap);
-    const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
+    const { username: owner, nameDebate, followers = [] } = updatedDebate;
+    console.log("debate", updatedDebate);
 
+    // Preparamos lista de destinatarios (dueño + cada follower)
+    const recipients = Array.from(new Set([owner, ...followers]));
+    const debateId = updatedDebate.idDebate;
+    // Creamos notificación para cada uno
+    await Promise.all(
+      recipients.map(user => {
+        const isOwner = user === owner;
+        const texto = isOwner
+          ? `${username} ha comentado en tu debate “${nameDebate}”`
+          : `${username} ha comentado en el debate “${nameDebate}”`;
+        return createNotification(user, texto, debateId);
+      })
+    );
+ 
+    const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
+    
     return res.status(200).json(created || newComment);
   } catch (error) {
     return res.status(500).json({ error: error.message });
@@ -797,8 +823,33 @@ addComment: async (req, res) => {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  },
+
+  // POST /debates/:id/follow
+  followDebate: async (req, res) => {
+    const { id } = req.params;
+    const { username } = req.body;
+    const debateRef = doc(debatesCollection, id);
+    await updateDoc(debateRef, {
+      followers: arrayUnion(username)
+    });
+    res.status(200).json({ message: 'Seguido correctamente' });
+  },
+
+    // DELETE /debates/:id/follow
+    unfollowDebate: async (req, res) => {
+      const { id } = req.params;
+      const { username } = req.body;
+      const debateRef = doc(debatesCollection, id);
+      await updateDoc(debateRef, {
+        followers: arrayRemove(username)
+      });
+      res.status(200).json({ message: 'Dejado de seguir correctamente' });
+    }
 };
+
+
+
 
 const getBestArgument = (comments) => {
   if (!comments || comments.length === 0) return null;

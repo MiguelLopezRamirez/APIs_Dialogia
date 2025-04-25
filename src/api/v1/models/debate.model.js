@@ -17,6 +17,7 @@ class Debate {
     this.peopleAgaist = [];
     this.moderationStatus = 'PENDING'; // PENDING, APPROVED, CENSORED, DELETED
     this.moderationReason = '';
+    this.followers = [];
   }
 
   toFirestore() {
@@ -33,7 +34,8 @@ class Debate {
       peopleInFavor: this.peopleInFavor,
       peopleAgaist: this.peopleAgaist,
       moderationStatus: this.moderationStatus,
-      moderationReason: this.moderationReason
+      moderationReason: this.moderationReason,
+      followers: this.followers
     };
   }
 
@@ -56,7 +58,8 @@ class Debate {
     debate.peopleAgaist = data.peopleAgaist || [];
     debate.moderationStatus = data.moderationStatus || 'APPROVED';
     debate.moderationReason = data.moderationReason || '';
-    
+    debate.followers = data.followers || [];  
+
     return debate;
   }
 
@@ -75,7 +78,8 @@ class Debate {
       peopleInFavor: this.peopleInFavor,
       peopleAgaist: this.peopleAgaist,
       moderationStatus: this.moderationStatus,
-      moderationReason: this.moderationReason
+      moderationReason: this.moderationReason,
+      followers: this.followers
     };
   }
 }
