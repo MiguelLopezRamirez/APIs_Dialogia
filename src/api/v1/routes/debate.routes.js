@@ -21,7 +21,11 @@ router.post('/:id/position', debateController.position);
 // Acciones para producción
 router.post('/debates', debateController.createDebates)
 
-//
+// Seguir o dejar de seguir debate
+router.post('/:id/follow',   debateController.followDebate);
+router.delete('/:id/follow', debateController.unfollowDebate);
+
+
 // responder debate
 router.post('/:id/comments/reply', debateController.addReplyComment);
 
