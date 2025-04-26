@@ -37,8 +37,6 @@ async function logCensoredContent({ type, contentId, debateId, commentId, conten
   await addDoc(censoredCollection, censoredDoc);
 }
 const debateController = {
-
-
   // Crear debate
   createDebate: async (req, res) => {
     try {
@@ -667,21 +665,115 @@ addComment: async (req, res) => {
 
   // Obtener debates más populares
   getPopularDebates: async (req, res) => {
-    try {
-      const { limit = 10 } = req.query;
-     
+    try {     
       const q = query(
         debatesCollection,
         orderBy('popularity', 'desc'),
-        limit(parseInt(limit))
+        limit(5)
       );
      
       const querySnapshot = await getDocs(q);
-      const debates = querySnapshot.docs.map(doc => {
-        const debate = Debate.fromFirestore(doc);
-        return debate.toJSON();
+      const debatesData = querySnapshot.docs.map(doc => {
+        return Debate.fromFirestore(doc);
       });
-     
+
+      // Obtener IDs únicos de categorías
+      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+
+      // Buscar todas las categorías en paralelo
+      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+      const categorySnapshots = await Promise.all(categoryPromises);
+
+      // Crear mapa de ID a nombre
+      const categoryMap = {};
+      categorySnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const category = Category.fromFirestore(snap);
+          categoryMap[snap.id] = category.name;
+        }
+      });
+
+      // Reemplazar IDs con nombres
+      const debates = debatesData.map(debate => {
+        const json = debate.toJSON();
+        json.category = categoryMap[debate.category] || null;
+        return json;
+      });
+
+      res.status(200).json(debates);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Obtener debates más populares
+  getRecommendDebates: async (req, res) => {
+    try {
+      const { interests } = req.body; // Array de IDs de categorías de interés
+      
+      if (!interests || !Array.isArray(interests) || interests.length === 0) {
+        return res.status(400).json({ error: "Se requiere un arreglo de intereses" });
+      }
+  
+      // Determinar distribución de debates por categoría
+      let categoryDistribution = [];
+      if (interests.length === 1) {
+        categoryDistribution = [{ categoryId: interests[0], count: 3 }];
+      } else if (interests.length === 2) {
+        categoryDistribution = [
+          { categoryId: interests[0], count: 2 },
+          { categoryId: interests[1], count: 1 }
+        ];
+      } else {
+        categoryDistribution = interests.slice(0, 3).map(categoryId => ({
+          categoryId,
+          count: 1
+        }));
+      }
+  
+      // Obtener debates para cada categoría según la distribución
+      const debatePromises = categoryDistribution.map(({ categoryId, count }) => {
+        const q = query(
+          debatesCollection,
+          where('category', '==', categoryId),
+          orderBy('popularity', 'desc'),
+          limit(count)
+        );
+        return getDocs(q);
+      });
+  
+      const querySnapshots = await Promise.all(debatePromises);
+      let debatesData = [];
+      
+      querySnapshots.forEach(snapshot => {
+        snapshot.docs.forEach(doc => {
+          debatesData.push(Debate.fromFirestore(doc));
+        });
+      });
+  
+      // Mezclar los debates para no agruparlos por categoría
+      debatesData = debatesData.sort(() => Math.random() - 0.5);
+  
+      // Obtener nombres de categorías (igual que antes)
+      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+      const categorySnapshots = await Promise.all(categoryPromises);
+  
+      const categoryMap = {};
+      categorySnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const category = Category.fromFirestore(snap);
+          categoryMap[snap.id] = category.name;
+        }
+      });
+  
+      // Formatear respuesta
+      const debates = debatesData.map(debate => {
+        const json = debate.toJSON();
+        json.category = categoryMap[debate.category] || null;
+        return json;
+      });
+  
       res.status(200).json(debates);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -848,9 +940,6 @@ addComment: async (req, res) => {
     }
 };
 
-
-
-
 const getBestArgument = (comments) => {
   if (!comments || comments.length === 0) return null;
   
@@ -863,7 +952,8 @@ const getBestArgument = (comments) => {
     argument: bestComment.argument,
     likes: bestComment.likes,
     position: bestComment.position,
-    username: bestComment.username
+    username: bestComment.username,
+    datareg: bestComment.datareg
   };
 };
 

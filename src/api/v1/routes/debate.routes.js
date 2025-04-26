@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/', debateController.createDebate);
 router.get('/', debateController.getAllDebates);
 router.get('/popular', debateController.getPopularDebates);
+router.post('/recommend/', debateController.getRecommendDebates);
 router.get('/search', debateController.searchDebates);
 router.get('/category/:categoryId', debateController.getDebatesByCategory);
 router.get('/:id', debateController.getDebateById);
