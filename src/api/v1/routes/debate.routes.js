@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/', debateController.createDebate);
 router.get('/', debateController.getAllDebates);
 router.get('/popular', debateController.getPopularDebates);
+router.post('/recommend/', debateController.getRecommendDebates);
 router.get('/search', debateController.searchDebates);
 router.get('/category/:categoryId', debateController.getDebatesByCategory);
 router.get('/:id', debateController.getDebateById);
@@ -21,4 +22,17 @@ router.post('/:id/position', debateController.position);
 // Acciones para producción
 router.post('/debates', debateController.createDebates)
 
+// Seguir o dejar de seguir debate
+router.post('/:id/follow',   debateController.followDebate);
+router.delete('/:id/follow', debateController.unfollowDebate);
+
+
+// responder debate
+router.post('/:id/comments/reply', debateController.addReplyComment);
+
+/*
+router.get('/moderation/pending', debateController.getPendingModeration);
+router.patch('/:id/moderation', debateController.updateModerationStatus);
+router.patch('/comments/:commentId/moderation', debateController.updateCommentModerationStatus);
+*/
 export default router;

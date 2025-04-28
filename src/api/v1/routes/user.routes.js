@@ -6,6 +6,11 @@ const router = express.Router();
 // Obtener usuario por uid
 router.get('/:uid', userController.getUserByUid);
 
+// Eliminar usuario por uid
+router.delete('/:uid', userController.deleteUser);
+// Obener actividad de usuario por uid
+router.get('/:uid/activity', userController.activityUser);
+
 // Agregar intereses (puede ser primera vez o adicionales)
 router.post('/:uid/interests', userController.addUserInterests);
 

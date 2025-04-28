@@ -1,6 +1,8 @@
-const { Debate, debatesCollection } = require('../models/debate.model');
+const { Debate, debatesCollection,censoredCollection } = require('../models/debate.model');
+const geminiService = require('../services/gemini.service');
+const { createNotification } = require('../services/notification.service');
 const { Category, categoriesCollection } = require('../models/category.model');
-const {
+const {addDoc,
   doc,
   setDoc,
   getDoc,
@@ -18,26 +20,55 @@ const {
   serverTimestamp
 } = require('firebase/firestore');
 
+async function logCensoredContent({ type, contentId, debateId, commentId, content, username, reason, categories }) {
+  if (!censoredCollection) return;
+  
+  const censoredDoc = {
+    type,
+    contentId,
+    debateId: type === 'COMMENT' ? debateId : null,
+    originalContent: content,
+    username,
+    reason,
+    categories,
+    timestamp: serverTimestamp()
+  };
+  
+  await addDoc(censoredCollection, censoredDoc);
+}
 const debateController = {
   // Crear debate
   createDebate: async (req, res) => {
     try {
       const { nameDebate, argument, category, username, refs = [], image = '' } = req.body;
-     
+      
       // Validaciones
       if (!nameDebate || !argument || !category || !username) {
         return res.status(400).json({ error: 'Nombre, argumento, categoría y usuario son requeridos' });
       }
-
-      // Verificar que la categoría exista
+  
+      // Verificar categoría
       const categoryRef = doc(categoriesCollection, category);
       const categorySnap = await getDoc(categoryRef);
-     
+      
       if (!categorySnap.exists()) {
         return res.status(400).json({ error: 'La categoría no existe' });
       }
-
-      // Crear nuevo debate
+  
+      // Moderar contenido con Gemini
+      const contentToModerate = `${nameDebate}\n\n${argument}`;
+      const moderationResult = await geminiService.moderateContent(contentToModerate);
+      
+      // Manejar decisiones de moderación
+      if (moderationResult.decision === 'ELIMINADO') {
+        return res.status(403).json({ 
+          error: 'El contenido viola nuestras normas',
+          reason: moderationResult.reason,
+          categories: moderationResult.flaggedCategories
+        });
+      }
+  
+      // Crear debate
       const newDebateRef = doc(debatesCollection);
       const newDebate = new Debate(
         newDebateRef.id,
@@ -48,18 +79,41 @@ const debateController = {
         refs,
         image
       );
-
+  
+      // Aplicar estado de moderación
+      if (moderationResult.decision === 'CENSURADO') {
+        newDebate.moderationStatus = 'CENSORED';
+        newDebate.moderationReason = moderationResult.reason;
+        
+        // Registrar en colección de censura
+        await logCensoredContent({
+          type: 'DEBATE',
+          contentId: newDebateRef.id,
+          content: contentToModerate,
+          username,
+          reason: moderationResult.reason,
+          categories: moderationResult.flaggedCategories
+        });
+      } else {
+        newDebate.moderationStatus = 'APPROVED';
+      }
+  
       await setDoc(newDebateRef, newDebate.toFirestore());
+      
+      //Auto-follow
+      await updateDoc(newDebateRef, {
+        followers: arrayUnion(username),
+      });
 
-      // Obtener el debate recién creado para incluir el timestamp resuelto
+      // Obtener debate creado
       const createdDebateSnap = await getDoc(newDebateRef);
       const createdDebate = Debate.fromFirestore(createdDebateSnap);
-
+  
       res.status(201).json(createdDebate.toJSON());
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  },
+  }, 
 
   createDebates: async(req, res) =>{
     try {
@@ -125,7 +179,11 @@ const debateController = {
         // Añadir operación al batch
         const debateRef = doc(debatesCollection, debateId);
         batch.set(debateRef, newDebate.toFirestore());
-  
+        
+        batch.update(debateRef, {
+          followers: arrayUnion(username)
+        });
+
         createdDebates.push(newDebate);
       }
   
@@ -290,7 +348,10 @@ getDebateById: async (req, res) => {
       debate.category = null; // o mantener el ID si prefieres
     }
 
-    res.status(200).json(debate.toJSON());
+    const responseData = debate.toJSON();
+    responseData.bestArgument = getBestArgument(debate.comments);
+
+    res.status(200).json(responseData);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -361,33 +422,46 @@ getDebateById: async (req, res) => {
 // Añadir comentario a un debate (método completo actualizado)
 addComment: async (req, res) => {
   try {
+
     const { id } = req.params;                  // idDebate
     const { username, argument, position, refs = [], image = ""} = req.body;
 
     console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs, image });
 
+
     if (!username || !argument || position === undefined || position === null) {
-      console.warn("WARN: Falta username o argument");
       return res.status(400).json({ error: "Usuario y comentario son requeridos" });
     }
 
     const docRef = doc(debatesCollection, id);
     const docSnap = await getDoc(docRef);
     if (!docSnap.exists()) {
-      console.warn("WARN: Debate no encontrado:", id);
       return res.status(404).json({ error: "Debate no encontrado" });
     }
 
     const debateData = docSnap.data();
+    
+    // Verificar posición del usuario
     let userPosition;
     if (debateData.peopleInFavor.includes(username)) userPosition = true;
     else if (debateData.peopleAgaist.includes(username)) userPosition = false;
     else {
-      console.warn("WARN: Usuario no ha votado:", username);
-      console.log(debateData);
       return res.status(400).json({ error: "Debe votar antes de comentar" });
     }
 
+    // Moderar comentario con Gemini
+    const moderationResult = await geminiService.moderateContent(argument);
+    
+    // Manejar decisiones de moderación
+    if (moderationResult.decision === 'ELIMINADO') {
+      return res.status(403).json({ 
+        error: 'El comentario viola nuestras normas',
+        reason: moderationResult.reason,
+        categories: moderationResult.flaggedCategories
+      });
+    }
+
+    // Crear comentario
     const newComment = {
       idComment: `auto_${Date.now()}`,
       paidComment: "",
@@ -397,24 +471,53 @@ addComment: async (req, res) => {
       dislikes: 0,
       position: userPosition,
       datareg: new Date().toISOString(),
-      refs,   // guardamos aquí las referencias
-      image,
+
+      refs,
+      moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
+      moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
+
     };
 
-    console.debug("DEBUG: newComment:", newComment);
+    // Registrar comentario censurado si aplica
+    if (moderationResult.decision === 'CENSURADO') {
+      await logCensoredContent({
+        type: 'COMMENT',
+        contentId: newComment.idComment,
+        debateId: id,
+        content: argument,
+        username,
+        reason: moderationResult.reason,
+        categories: moderationResult.flaggedCategories
+      });
+    }
 
     await updateDoc(docRef, {
       comments: arrayUnion(newComment),
       popularity: increment(1),
     });
-
     const updatedSnap = await getDoc(docRef);
     const updatedDebate = Debate.fromFirestore(updatedSnap);
-    const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
+    const { username: owner, nameDebate, followers = [] } = updatedDebate;
+    console.log("debate", updatedDebate);
 
+    // Preparamos lista de destinatarios (dueño + cada follower)
+    const recipients = Array.from(new Set([owner, ...followers]));
+    const debateId = updatedDebate.idDebate;
+    // Creamos notificación para cada uno
+    await Promise.all(
+      recipients.map(user => {
+        const isOwner = user === owner;
+        const texto = isOwner
+          ? `${username} ha comentado en tu debate “${nameDebate}”`
+          : `${username} ha comentado en el debate “${nameDebate}”`;
+        return createNotification(user, texto, debateId);
+      })
+    );
+ 
+    const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
+    
     return res.status(200).json(created || newComment);
   } catch (error) {
-    console.error("ERROR en addComment:", error);
     return res.status(500).json({ error: error.message });
   }
 },
@@ -567,22 +670,204 @@ addComment: async (req, res) => {
 
   // Obtener debates más populares
   getPopularDebates: async (req, res) => {
-    try {
-      const { limit = 10 } = req.query;
-     
+    try {     
       const q = query(
         debatesCollection,
         orderBy('popularity', 'desc'),
-        limit(parseInt(limit))
+        limit(5)
       );
      
       const querySnapshot = await getDocs(q);
-      const debates = querySnapshot.docs.map(doc => {
-        const debate = Debate.fromFirestore(doc);
-        return debate.toJSON();
+      const debatesData = querySnapshot.docs.map(doc => {
+        return Debate.fromFirestore(doc);
       });
-     
+
+      // Obtener IDs únicos de categorías
+      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+
+      // Buscar todas las categorías en paralelo
+      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+      const categorySnapshots = await Promise.all(categoryPromises);
+
+      // Crear mapa de ID a nombre
+      const categoryMap = {};
+      categorySnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const category = Category.fromFirestore(snap);
+          categoryMap[snap.id] = category.name;
+        }
+      });
+
+      // Reemplazar IDs con nombres
+      const debates = debatesData.map(debate => {
+        const json = debate.toJSON();
+        json.category = categoryMap[debate.category] || null;
+        return json;
+      });
+
       res.status(200).json(debates);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // Obtener debates más populares
+  getRecommendDebates: async (req, res) => {
+    try {
+      const { interests } = req.body; // Array de IDs de categorías de interés
+      
+      if (!interests || !Array.isArray(interests) || interests.length === 0) {
+        return res.status(400).json({ error: "Se requiere un arreglo de intereses" });
+      }
+  
+      // Determinar distribución de debates por categoría
+      let categoryDistribution = [];
+      if (interests.length === 1) {
+        categoryDistribution = [{ categoryId: interests[0], count: 3 }];
+      } else if (interests.length === 2) {
+        categoryDistribution = [
+          { categoryId: interests[0], count: 2 },
+          { categoryId: interests[1], count: 1 }
+        ];
+      } else {
+        categoryDistribution = interests.slice(0, 3).map(categoryId => ({
+          categoryId,
+          count: 1
+        }));
+      }
+  
+      // Obtener debates para cada categoría según la distribución
+      const debatePromises = categoryDistribution.map(({ categoryId, count }) => {
+        const q = query(
+          debatesCollection,
+          where('category', '==', categoryId),
+          orderBy('popularity', 'desc'),
+          limit(count)
+        );
+        return getDocs(q);
+      });
+  
+      const querySnapshots = await Promise.all(debatePromises);
+      let debatesData = [];
+      
+      querySnapshots.forEach(snapshot => {
+        snapshot.docs.forEach(doc => {
+          debatesData.push(Debate.fromFirestore(doc));
+        });
+      });
+  
+      // Mezclar los debates para no agruparlos por categoría
+      debatesData = debatesData.sort(() => Math.random() - 0.5);
+  
+      // Obtener nombres de categorías (igual que antes)
+      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
+      const categorySnapshots = await Promise.all(categoryPromises);
+  
+      const categoryMap = {};
+      categorySnapshots.forEach(snap => {
+        if (snap.exists()) {
+          const category = Category.fromFirestore(snap);
+          categoryMap[snap.id] = category.name;
+        }
+      });
+  
+      // Formatear respuesta
+      const debates = debatesData.map(debate => {
+        const json = debate.toJSON();
+        json.category = categoryMap[debate.category] || null;
+        return json;
+      });
+  
+      res.status(200).json(debates);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  // debate.controller.js (agregar este nuevo método)
+  addReplyComment: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { paidComment, username, argument, position, refs = [] } = req.body;
+  
+      if (!paidComment || !username || !argument || position === undefined) {
+        return res.status(400).json({ error: 'Todos los campos son requeridos' });
+      }
+  
+      const debateRef = doc(debatesCollection, id);
+      const debateSnap = await getDoc(debateRef);
+      
+      if (!debateSnap.exists()) {
+        return res.status(404).json({ error: 'Debate no encontrado' });
+      }
+  
+      const debateData = debateSnap.data();
+      
+      // Verificar comentario padre
+      const parentComment = debateData.comments.find(c => c.idComment === paidComment);
+      if (!parentComment) {
+        return res.status(404).json({ error: 'Comentario padre no encontrado' });
+      }
+  
+      // Verificar posición del usuario
+      let userPosition;
+      if (debateData.peopleInFavor.includes(username)) userPosition = true;
+      else if (debateData.peopleAgaist.includes(username)) userPosition = false;
+      else {
+        return res.status(400).json({ error: 'Debe votar antes de comentar' });
+      }
+  
+      // Moderar respuesta con Gemini
+      const moderationResult = await geminiService.moderateContent(argument);
+      
+      if (moderationResult.decision === 'ELIMINADO') {
+        return res.status(403).json({ 
+          error: 'La respuesta viola nuestras normas',
+          reason: moderationResult.reason,
+          categories: moderationResult.flaggedCategories
+        });
+      }
+  
+      // Crear respuesta
+      const newReply = {
+        idComment: `auto_${Date.now()}`,
+        paidComment,
+        username,
+        argument,
+        likes: 0,
+        dislikes: 0,
+        position: userPosition,
+        datareg: new Date().toISOString(),
+        refs,
+        moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
+        moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
+      };
+  
+      // Registrar respuesta censurada si aplica
+      if (moderationResult.decision === 'CENSURADO') {
+        await logCensoredContent({
+          type: 'COMMENT',
+          contentId: newReply.idComment,
+          debateId: id,
+          content: argument,
+          username,
+          reason: moderationResult.reason,
+          categories: moderationResult.flaggedCategories
+        });
+      }
+  
+      await updateDoc(debateRef, {
+        comments: arrayUnion(newReply),
+        popularity: increment(1)
+      });
+  
+      const updatedSnap = await getDoc(debateRef);
+      const updatedDebate = Debate.fromFirestore(updatedSnap);
+      const createdReply = updatedDebate.comments.find(c => c.idComment === newReply.idComment);
+  
+      res.status(201).json(createdReply || newReply);
+  
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -635,7 +920,46 @@ addComment: async (req, res) => {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  },
+
+  // POST /debates/:id/follow
+  followDebate: async (req, res) => {
+    const { id } = req.params;
+    const { username } = req.body;
+    const debateRef = doc(debatesCollection, id);
+    await updateDoc(debateRef, {
+      followers: arrayUnion(username)
+    });
+    res.status(200).json({ message: 'Seguido correctamente' });
+  },
+
+    // DELETE /debates/:id/follow
+    unfollowDebate: async (req, res) => {
+      const { id } = req.params;
+      const { username } = req.body;
+      const debateRef = doc(debatesCollection, id);
+      await updateDoc(debateRef, {
+        followers: arrayRemove(username)
+      });
+      res.status(200).json({ message: 'Dejado de seguir correctamente' });
+    }
+};
+
+const getBestArgument = (comments) => {
+  if (!comments || comments.length === 0) return null;
+  
+  const bestComment = comments.reduce((prev, current) => 
+    (prev.likes > current.likes) ? prev : current
+  );
+  
+  return {
+    idComment: bestComment.idComment,
+    argument: bestComment.argument,
+    likes: bestComment.likes,
+    position: bestComment.position,
+    username: bestComment.username,
+    datareg: bestComment.datareg
+  };
 };
 
 module.exports = debateController;
