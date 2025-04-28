@@ -471,7 +471,7 @@ addComment: async (req, res) => {
       dislikes: 0,
       position: userPosition,
       datareg: new Date().toISOString(),
-
+      image,
       refs,
       moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
       moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
