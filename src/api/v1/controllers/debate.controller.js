@@ -2,6 +2,8 @@ const { Debate, debatesCollection,censoredCollection } = require('../models/deba
 const geminiService = require('../services/gemini.service');
 const { createNotification } = require('../services/notification.service');
 const { Category, categoriesCollection } = require('../models/category.model');
+const { User, usersCollection } = require('../models/user.model');
+
 const {addDoc,
   doc,
   setDoc,
@@ -109,6 +111,35 @@ const debateController = {
       const createdDebateSnap = await getDoc(newDebateRef);
       const createdDebate = Debate.fromFirestore(createdDebateSnap);
   
+      // Registrar interacción de comentar en la actividad del usuario 
+      try {
+        // 1. Obtener el documento del usuario en Firestore
+        const userQuery = query(usersCollection, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (userSnapshot.empty) {
+            console.warn(`Usuario ${username} no encontrado para actualizar actividad`);
+        } else {
+            // 2. Actualizar los campos de actividad
+            const userDoc = userSnapshot.docs[0];
+            await updateDoc(userDoc.ref, {
+                "activity.content.created": increment(1),
+                "activity.score": increment(5), 
+                "updatedAt": new Date() 
+            });
+            
+            // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
+            if (category) {
+                const categoryField = `activity.tags.${category}`;
+                await updateDoc(userDoc.ref, {
+                    [categoryField]: increment(1)
+                });
+            }
+        }
+      } catch (userUpdateError) {
+          console.error("Error al actualizar actividad del usuario:", userUpdateError);
+      }
+
       res.status(201).json(createdDebate.toJSON());
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -274,7 +305,7 @@ getAllDebates: async (req, res) => {
 // Endpoint para actualizar likes o dislikes de un comentario
 likesAndDislikes: async (req, res) => {
   const { id, idComment } = req.params;
-  const { action, method } = req.body; // action: "like" o "dislike", method: "add" o "remove"
+  const { action, method, username } = req.body; // action: "like" o "dislike", method: "add" o "remove"
 
   if (!['like', 'dislike'].includes(action) || !['add', 'remove'].includes(method)) {
     return res.status(400).json({ error: 'Acción o método inválido' });
@@ -303,16 +334,67 @@ likesAndDislikes: async (req, res) => {
     debateData.comments[commentIndex].dislikes = debateData.comments[commentIndex].dislikes || 0;
 
     // Actualiza el contador según la acción y el método recibido
+    // ocupo modificar esta parte
     if (action === 'like') {
+      //Actualizar contadores de likes
       debateData.comments[commentIndex].likes = 
         method === 'add'
           ? debateData.comments[commentIndex].likes + 1
           : Math.max(debateData.comments[commentIndex].likes - 1, 0);
+
+      try {
+        const userQuery = query(usersCollection, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          const updateData = {
+            "updatedAt": new Date(),
+          };
+    
+          if (method === 'add') {
+            updateData["activity.interactions.likes"] = increment(1);
+            updateData["activity.score"] = increment(1); 
+          } else {
+            updateData["activity.interactions.likes"] = increment(-1);
+            updateData["activity.score"] = increment(-1); 
+          }
+    
+          await updateDoc(userDoc.ref, updateData);
+        }
+      } catch (error) {
+        console.error("Error al actualizar actividad:", error);
+      }
     } else if (action === 'dislike') {
+      //Actualizar contadores de dislikes
       debateData.comments[commentIndex].dislikes = 
         method === 'add'
           ? debateData.comments[commentIndex].dislikes + 1
           : Math.max(debateData.comments[commentIndex].dislikes - 1, 0);
+
+      try {
+        const userQuery = query(usersCollection, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          const updateData = {
+            "updatedAt": new Date(),
+          };
+    
+          if (method === 'add') {
+            updateData["activity.interactions.dislikes"] = increment(1);
+            updateData["activity.score"] = increment(0.5); // +0.5 por dislike
+          } else {
+            updateData["activity.interactions.dislikes"] = increment(-1);
+            updateData["activity.score"] = increment(-0.5); // -0.5 por quitar dislike
+          }
+    
+          await updateDoc(userDoc.ref, updateData);
+        }
+      } catch (error) {
+        console.error("Error al actualizar actividad:", error);
+      }
     }
     
     // Guarda los cambios en Firestore
@@ -328,6 +410,7 @@ likesAndDislikes: async (req, res) => {
 getDebateById: async (req, res) => {
   try {
     const { id } = req.params;
+    const { username } = req.body;
     const docRef = doc(debatesCollection, id);
     const docSnap = await getDoc(docRef);
     
@@ -350,6 +433,29 @@ getDebateById: async (req, res) => {
 
     const responseData = debate.toJSON();
     responseData.bestArgument = getBestArgument(debate.comments);
+
+    // Registrar interacción de comentar en la actividad del usuario 
+    if (username) {
+      try {
+        // 1. Obtener el documento del usuario en Firestore
+        const userQuery = query(usersCollection, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (userSnapshot.empty) {
+            console.warn(`Usuario ${username} no encontrado para actualizar actividad`);
+        } else {
+            // 2. Actualizar los campos de actividad
+            const userDoc = userSnapshot.docs[0];
+            await updateDoc(userDoc.ref, {
+                "activity.content.views": increment(1),
+                //"activity.score": increment(0.05), 
+                "updatedAt": new Date() // Actualizar marca de tiempo
+            });
+        }
+      } catch (userUpdateError) {
+          console.error("Error al actualizar actividad del usuario:", userUpdateError);
+      }    
+    }
 
     res.status(200).json(responseData);
   } catch (error) {
@@ -510,6 +616,35 @@ addComment: async (req, res) => {
     );
  
     const created = updatedDebate.comments.find(c => c.idComment === newComment.idComment);
+
+    // Registrar interacción de comentar en la actividad del usuario 
+    try {
+      // 1. Obtener el documento del usuario en Firestore
+      const userQuery = query(usersCollection, where("username", "==", username));
+      const userSnapshot = await getDocs(userQuery);
+      
+      if (userSnapshot.empty) {
+          console.warn(`Usuario ${username} no encontrado para actualizar actividad`);
+      } else {
+          // 2. Actualizar los campos de actividad
+          const userDoc = userSnapshot.docs[0];
+          await updateDoc(userDoc.ref, {
+              "activity.interactions.comments": increment(1),
+              "activity.score": increment(3), // 3 puntos por comentario según tu ponderación
+              "updatedAt": new Date() // Actualizar marca de tiempo
+          });
+          
+          // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
+          if (updatedDebate.category) {
+              const categoryField = `activity.tags.${updatedDebate.category}`;
+              await updateDoc(userDoc.ref, {
+                  [categoryField]: increment(1)
+              });
+          }
+      }
+    } catch (userUpdateError) {
+        console.error("Error al actualizar actividad del usuario:", userUpdateError);
+    }
     
     return res.status(200).json(created || newComment);
   } catch (error) {
@@ -861,6 +996,35 @@ addComment: async (req, res) => {
       const updatedDebate = Debate.fromFirestore(updatedSnap);
       const createdReply = updatedDebate.comments.find(c => c.idComment === newReply.idComment);
   
+      // Registrar interacción de comentar en la actividad del usuario 
+      try {
+        // 1. Obtener el documento del usuario en Firestore
+        const userQuery = query(usersCollection, where("username", "==", username));
+        const userSnapshot = await getDocs(userQuery);
+        
+        if (userSnapshot.empty) {
+            console.warn(`Usuario ${username} no encontrado para actualizar actividad`);
+        } else {
+            // 2. Actualizar los campos de actividad
+            const userDoc = userSnapshot.docs[0];
+            await updateDoc(userDoc.ref, {
+                "activity.interactions.comments": increment(1),
+                "activity.score": increment(3), // 3 puntos por comentario según tu ponderación
+                "updatedAt": new Date() // Actualizar marca de tiempo
+            });
+            
+            // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
+            if (updatedDebate.category) {
+                const categoryField = `activity.tags.${updatedDebate.category}`;
+                await updateDoc(userDoc.ref, {
+                    [categoryField]: increment(1)
+                });
+            }
+        }
+      } catch (userUpdateError) {
+          console.error("Error al actualizar actividad del usuario:", userUpdateError);
+      }
+
       res.status(201).json(createdReply || newReply);
   
     } catch (error) {

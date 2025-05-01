@@ -3,6 +3,9 @@ import userController from '../controllers/user.controller';
 
 const router = express.Router();
 
+// Obtener ranking
+router.get('/ranking', userController.getRanking);
+
 // Obtener usuario por uid
 router.get('/:uid', userController.getUserByUid);
 

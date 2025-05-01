@@ -10,7 +10,7 @@ router.get('/popular', debateController.getPopularDebates);
 router.post('/recommend/', debateController.getRecommendDebates);
 router.get('/search', debateController.searchDebates);
 router.get('/category/:categoryId', debateController.getDebatesByCategory);
-router.get('/:id', debateController.getDebateById);
+router.post('/:id', debateController.getDebateById);
 router.patch('/:id', debateController.updateDebate);
 router.delete('/:id', debateController.deleteDebate);
 

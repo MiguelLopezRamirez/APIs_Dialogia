@@ -1,7 +1,5 @@
 import { Router } from 'express';
-import config from '../../../config/config'
-
-
+import config from '../../../config/config';
 import categoryRoutes from './category.routes';
 import debateRoutes from './debate.routes';
 import userRoutes from './user.routes';

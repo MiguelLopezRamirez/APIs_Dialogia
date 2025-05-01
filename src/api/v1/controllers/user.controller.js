@@ -261,7 +261,64 @@ const userController = {
         details: error.message 
       });
     }
-  }
+  },
+  getRanking: async (req, res) => {
+    try {
+      let  { global } = req.query; // Obtener el parámetro global (true/false)
+      
+      if (global === undefined) {
+        global = 'true';
+      }
+      
+      // 1. Obtener todos los usuarios
+      const usersSnapshot = await getDocs(usersCollection);
+      const users = [];
+      
+      usersSnapshot.forEach((doc) => {
+        const userData = doc.data();
+        
+        // Establecer valores por defecto para campos opcionales
+        const score = userData.activity?.score || 0;
+        const comments = userData.activity?.interactions?.comments || 0;
+        
+        users.push({
+          id: doc.id,
+          ...userData,
+          activity: {
+            ...userData.activity,
+            score: score,
+            interactions: {
+              ...userData.activity?.interactions,
+              comments: comments
+            }
+          },
+          classification: comments > 0 ? "Crítico" : "Espectador"
+        });
+      });
+  
+      // 2. Ordenar por score (descendente)
+      const rankedUsers = users.sort((a, b) => b.activity.score - a.activity.score);
+  
+      // 3. Agregar posición en ranking
+      let rankedUsersWithPosition = rankedUsers.map((user, index) => ({
+        ...user,
+        rank: index + 1,
+      }));
+  
+      // 4. Filtrar según el parámetro global
+      if (global !== 'true') {
+        rankedUsersWithPosition = rankedUsersWithPosition.slice(0, 8); // Solo primeros 8
+      }
+  
+      res.status(200).json(rankedUsersWithPosition);
+      
+    } catch (error) {
+      res.status(500).json({ 
+        error: "Error al obtener ranking",
+        details: error.message 
+      });
+    }
+  },
 
 };
 
