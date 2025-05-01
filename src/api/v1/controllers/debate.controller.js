@@ -528,10 +528,13 @@ getDebateById: async (req, res) => {
 // Añadir comentario a un debate (método completo actualizado)
 addComment: async (req, res) => {
   try {
-    const { id } = req.params; // ID del debate
-    const { username, argument, position, refs = [] } = req.body;
 
-    // Validaciones
+    const { id } = req.params;                  // idDebate
+    const { username, argument, position, refs = [], image = ""} = req.body;
+
+    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs, image });
+
+
     if (!username || !argument || position === undefined || position === null) {
       return res.status(400).json({ error: "Usuario y comentario son requeridos" });
     }
@@ -574,9 +577,11 @@ addComment: async (req, res) => {
       dislikes: 0,
       position: userPosition,
       datareg: new Date().toISOString(),
+      image,
       refs,
       moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
       moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
+
     };
 
     // Registrar comentario censurado si aplica
