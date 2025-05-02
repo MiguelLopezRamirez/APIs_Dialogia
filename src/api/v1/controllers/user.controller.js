@@ -319,6 +319,45 @@ const userController = {
       });
     }
   },
+  toggleUserCensorship: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const { censorship } = req.body;
+  
+      // Validación 1: Existencia de usuario
+      const user = await User.findByUid(uid);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      // Validación 2: Body correcto
+      if (typeof censorship !== 'boolean') {
+        return res.status(400).json({ 
+          error: 'Censorship must be a boolean value (true/false)' 
+        });
+      }
+  
+      // Actualización
+      const userRef = doc(usersCollection, uid);
+      await updateDoc(userRef, {
+        censorship,
+        updatedAt: new Date()
+      });
+  
+      // Respuesta exitosa
+      const updatedUser = await User.findByUid(uid);
+      res.status(200).json({
+        message: `Censorship ${censorship ? 'enabled' : 'disabled'} successfully`,
+        user: updatedUser
+      });
+  
+    } catch (error) {
+      res.status(500).json({ 
+        error: 'Failed to update censorship status',
+        details: error.message 
+      });
+    }
+  }
 
 };
 

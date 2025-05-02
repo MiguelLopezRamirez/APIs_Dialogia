@@ -410,15 +410,34 @@ likesAndDislikes: async (req, res) => {
 getDebateById: async (req, res) => {
   try {
     const { id } = req.params;
+    const { censored = 'true'} = req.query;
     const { username } = req.body;
     const docRef = doc(debatesCollection, id);
-    const docSnap = await getDoc(docRef);
+    const docSnap = await getDoc(docRef);      
+    
+    // Convertir showCensored a booleano
+    let showCensoredContent;
+    if (censored === 'true'){
+      showCensoredContent = false;
+    }else{
+      showCensoredContent = true;
+    }
+    
     
     if (!docSnap.exists()) {
       return res.status(404).json({ error: 'Debate no encontrado' });
     }
     
     const debate = Debate.fromFirestore(docSnap);
+
+    // Aplicar filtro de censura a los comentarios
+    if(!showCensoredContent){
+      if (debate.comments && debate.comments.length > 0) {
+        debate.comments = debate.comments.filter(comment => 
+          comment.moderationStatus === 'APPROVED'
+        );
+      }
+    }
     
     // Obtener nombre de la categoría
     const categoryRef = doc(categoriesCollection, debate.category);
@@ -760,27 +779,45 @@ addComment: async (req, res) => {
   getDebatesByCategory: async (req, res) => {
     try {
       const { categoryId } = req.params;
-      const { sort = 'active', search = '' } = req.query; // Añadir search
+      const { sort = 'active', search = '', censored = 'true' } = req.query;
+      
+      // Convertir showCensored a booleano
+      let showCensoredContent;
+      if (censored === 'true'){
+        showCensoredContent = false;
+      }else{
+        showCensoredContent = true;
+      }
   
+
       // 1. Validar que la categoría exista
-    const categoryRef = doc(categoriesCollection, categoryId);
-    const categorySnap = await getDoc(categoryRef);
-    if (!categorySnap.exists()) {
-      return res.status(404).json({ error: 'Categoría no encontrada' });
-    }
+      const categoryRef = doc(categoriesCollection, categoryId);
+      const categorySnap = await getDoc(categoryRef);
+      if (!categorySnap.exists()) {
+        return res.status(404).json({ error: 'Categoría no encontrada' });
+      }
 
-    // 2. Obtener y procesar debates
-    const q = query(debatesCollection, where('category', '==', categoryId));
-    const querySnapshot = await getDocs(q);
-    const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
-    const searchTerm = search.toLowerCase();
-    let filteredDebates = debatesData.filter(debate => 
-      debate.nameDebate.toLowerCase().includes(searchTerm) || 
-      debate.argument.toLowerCase().includes(searchTerm)
-    );
+      // 2. Obtener debates
+      const q = query(debatesCollection, where('category', '==', categoryId));
+      const querySnapshot = await getDocs(q);
+      const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
 
-  
-      // Ordenamiento
+      let filteredDebates = debatesData;
+      // 5. Filtrar debates según preferencia de censura
+      if (!showCensoredContent) {
+        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
+        filteredDebates = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
+
+      }
+
+      // 6. Aplicar búsqueda si existe
+      const searchTerm = search.toLowerCase();
+        filteredDebates = filteredDebates.filter(debate => 
+        debate.nameDebate.toLowerCase().includes(searchTerm) || 
+        debate.argument.toLowerCase().includes(searchTerm)
+      );
+
+      // 7. Ordenamiento
       switch (sort) {
         case 'active':
           filteredDebates = filteredDebates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
@@ -796,8 +833,9 @@ addComment: async (req, res) => {
           filteredDebates = filteredDebates.sort((a, b) => b.datareg - a.datareg);
           break;
       }
-  
+      console.log(filteredDebates);
       res.status(200).json(filteredDebates);
+      
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -811,14 +849,29 @@ addComment: async (req, res) => {
         orderBy('popularity', 'desc'),
         limit(5)
       );
-     
+      const { censored = 'true' } = req.query;
+      
+      // Convertir showCensored a booleano
+      let showCensoredContent;
+      if (censored === 'true'){
+        showCensoredContent = false;
+      }else{
+        showCensoredContent = true;
+      }
       const querySnapshot = await getDocs(q);
       const debatesData = querySnapshot.docs.map(doc => {
         return Debate.fromFirestore(doc);
       });
 
+      let filteredDebates = debatesData;
+      // 5. Filtrar debates según preferencia de censura
+      if (!showCensoredContent) {
+        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
+        filteredDebates = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
+      }
+
       // Obtener IDs únicos de categorías
-      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+      const categoryIds = [...new Set(filteredDebates.map(debate => debate.category))];
 
       // Buscar todas las categorías en paralelo
       const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
@@ -849,12 +902,22 @@ addComment: async (req, res) => {
   // Obtener debates más populares
   getRecommendDebates: async (req, res) => {
     try {
-      const { interests } = req.body; // Array de IDs de categorías de interés
       
+      const { interests } = req.body; // Array de IDs de categorías de interés
+      const { censored = 'true' } = req.query;
+      
+      // Convertir showCensored a booleano
+      let showCensoredContent;
+      if (censored === 'true'){
+        showCensoredContent = false;
+      }else{
+        showCensoredContent = true;
+      }
+        
       if (!interests || !Array.isArray(interests) || interests.length === 0) {
         return res.status(400).json({ error: "Se requiere un arreglo de intereses" });
       }
-  
+      
       // Determinar distribución de debates por categoría
       let categoryDistribution = [];
       if (interests.length === 1) {
@@ -890,7 +953,13 @@ addComment: async (req, res) => {
           debatesData.push(Debate.fromFirestore(doc));
         });
       });
-  
+      
+      // 5. Filtrar debates según preferencia de censura
+      if (!showCensoredContent) {
+        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
+        debatesData = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
+      }
+
       // Mezclar los debates para no agruparlos por categoría
       debatesData = debatesData.sort(() => Math.random() - 0.5);
   
@@ -1040,19 +1109,36 @@ addComment: async (req, res) => {
   // Buscar debates por término
   searchDebates: async (req, res) => {
     try {
-      let { term } = req.query;
+      let { term, censored = 'true'} = req.query;
       
       if (!term) {
         return res.status(400).json({ error: 'Término de búsqueda es requerido' });
       }
       
+      // Convertir showCensored a booleano
+      let showCensoredContent;
+      if (censored === 'true'){
+        showCensoredContent = false;
+      }else{
+        showCensoredContent = true;
+      }
+
       term = term.toLowerCase();
       
       const querySnapshot = await getDocs(debatesCollection);
       const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
       
+      let filteredDebates = debatesData;
+      // 5. Filtrar debates según preferencia de censura
+      if (!showCensoredContent) {
+        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
+        filteredDebates = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
+
+      }
+
       // Filtrar debates por término de búsqueda
-      const filteredDebates = debatesData.filter(debate => 
+      
+       filteredDebates = filteredDebates.filter(debate => 
         debate.nameDebate.toLowerCase().includes(term) || 
         debate.argument.toLowerCase().includes(term)
       );

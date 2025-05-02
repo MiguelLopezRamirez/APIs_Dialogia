@@ -23,4 +23,7 @@ router.put('/:uid/interests', userController.updateUserInterests);
 // Eliminar intereses específicos
 router.delete('/:uid/interests', userController.removeUserInterests);
 
+//Actualiza la Censura
+router.put('/:uid/censure',userController.toggleUserCensorship);
+
 export default router;
