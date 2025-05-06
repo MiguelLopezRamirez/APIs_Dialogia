@@ -3,6 +3,7 @@ const geminiService = require('../services/gemini.service');
 const { createNotification } = require('../services/notification.service');
 const { Category, categoriesCollection } = require('../models/category.model');
 const { User, usersCollection } = require('../models/user.model');
+const { checkAndAwardBadges } = require('../services/badge.service');
 
 const {addDoc,
   doc,
@@ -127,7 +128,7 @@ const debateController = {
                 "activity.score": increment(5), 
                 "updatedAt": new Date() 
             });
-            
+            await checkAndAwardBadges(username);
             // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
             if (category) {
                 const categoryField = `activity.tags.${category}`;
@@ -230,42 +231,6 @@ const debateController = {
   },
 
   // Obtener todos los debates
-  /*getAllDebates: async (req, res) => {
-    try {
-      const querySnapshot = await getDocs(debatesCollection);
-      const debates = querySnapshot.docs.map(doc => {
-        const debate = Debate.fromFirestore(doc);
-
-        debate.category = "hola";
-
-        return debate.toJSON();
-      });
-     
-      res.status(200).json(debates);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-
-  // Obtener debate por ID
-  getDebateById: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const docRef = doc(debatesCollection, id);
-      const docSnap = await getDoc(docRef);
-     
-      if (!docSnap.exists()) {
-        return res.status(404).json({ error: 'Debate no encontrado' });
-      }
-     
-      const debate = Debate.fromFirestore(docSnap);
-      res.status(200).json(debate.toJSON());
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },*/
-
-  // Obtener todos los debates
 getAllDebates: async (req, res) => {
   try {
     const querySnapshot = await getDocs(debatesCollection);
@@ -361,6 +326,7 @@ likesAndDislikes: async (req, res) => {
           }
     
           await updateDoc(userDoc.ref, updateData);
+          await checkAndAwardBadges(username);
         }
       } catch (error) {
         console.error("Error al actualizar actividad:", error);
@@ -391,6 +357,8 @@ likesAndDislikes: async (req, res) => {
           }
     
           await updateDoc(userDoc.ref, updateData);
+          
+
         }
       } catch (error) {
         console.error("Error al actualizar actividad:", error);
@@ -657,7 +625,7 @@ addComment: async (req, res) => {
               "activity.score": increment(3), // 3 puntos por comentario según tu ponderación
               "updatedAt": new Date() // Actualizar marca de tiempo
           });
-          
+          await checkAndAwardBadges(username);
           // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
           if (updatedDebate.category) {
               const categoryField = `activity.tags.${updatedDebate.category}`;
@@ -730,50 +698,18 @@ addComment: async (req, res) => {
       // Obtener datos actualizados
       const updatedSnap = await getDoc(docRef);
       const updatedDebate = Debate.fromFirestore(updatedSnap);
-      
+      await checkAndAwardBadges(username);
       res.status(200).json({
         message: position === null ? 'Voto reiniciado' : 'Voto registrado',
         peopleInFavor: updatedDebate.peopleInFavor,
         peopleAgaist: updatedDebate.peopleAgaist,
         popularity: updatedDebate.popularity
       });
-  
+   
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   },
-
-  // addComment: async (req, res) => {
-  //   try {
-  //     const { id } = req.params; // ID del debate
-  //     const { username, text, refs, position } = req.body; // position: true para "A Favor", false para "En Contra"
-
-  //     // Validar campos obligatorios
-  //     if (!username || !text) {
-  //       return res.status(400).json({ error: "El nombre de usuario y el comentario son requeridos" });
-  //     }
-
-  //     // Construir el objeto comentario
-  //     const comment = {
-  //       username,
-  //       text,
-  //       refs: refs || [], // refs es un arreglo de referencias (URLs)
-  //       position, // valor booleano: true significa "A Favor", false "En Contra"
-  //       createdAt: serverTimestamp()
-  //     };
-
-  //     // Suponiendo que cada debate tiene una subcolección 'comments'
-  //     const commentsCollectionRef = collection(db, "debates", id, "comments");
-  //     const docRef = await addDoc(commentsCollectionRef, comment);
-
-  //     // Opcionalmente, puedes devolver el ID generado
-  //     comment.id = docRef.id;
-
-  //     res.status(201).json(comment);
-  //   } catch (error) {
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // },
 
   // Buscar debates por categoría
   getDebatesByCategory: async (req, res) => {
@@ -1083,10 +1019,11 @@ addComment: async (req, res) => {
             const userDoc = userSnapshot.docs[0];
             await updateDoc(userDoc.ref, {
                 "activity.interactions.comments": increment(1),
+                "activity.interactions.replies": increment(1),
                 "activity.score": increment(3), // 3 puntos por comentario según tu ponderación
                 "updatedAt": new Date() // Actualizar marca de tiempo
             });
-            
+            await checkAndAwardBadges(username);
             // 3. Opcional: Actualizar tags/categoría si es relevante para el debate
             if (updatedDebate.category) {
                 const categoryField = `activity.tags.${updatedDebate.category}`;

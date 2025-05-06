@@ -1,8 +1,8 @@
-import { initializeApp } from 'firebase/app';
-const { getFirestore } = require('firebase/firestore');
-import config from './config';
+import { initializeApp } from "firebase/app";
+const { getFirestore } = require("firebase/firestore");
+import config from "./config.mjs";
 
-console.log('Configuración de Firebase:', config); // Verifica que las credenciales se carguen correctamente
+console.log("Configuración de Firebase:", config); // Verifica que las credenciales se carguen correctamente
 
 const firebaseConfig = {
   apiKey: config.FIREBASE_API_KEY,
@@ -17,6 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-console.log('Firebase inicializado correctamente'); // Verifica que Firebase se inicialice
+console.log("Firebase inicializado correctamente"); // Verifica que Firebase se inicialice
 
 export { db };

@@ -357,8 +357,66 @@ const userController = {
         details: error.message 
       });
     }
-  }
+  },
+   // Actualiza el título (insignia usada) de un usuario
+   updateUserTitle: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      const { title } = req.body;  // aquí recibimos badgeName
 
+      if (typeof title !== 'string' || title.trim() === '') {
+        return res.status(400).json({ error: 'Title must be a non-empty string' });
+      }
+
+      // Verificar existencia de usuario
+      const user = await User.findByUid(uid);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Actualizar solo el campo title
+      const userRef = doc(usersCollection, uid);
+      await updateDoc(userRef, {
+        title,
+        updatedAt: new Date()
+      });
+
+      // Devolver el usuario actualizado
+      const updatedUser = await User.findByUid(uid);
+      res.status(200).json({ message: 'Title updated successfully', user: updatedUser });
+    } catch (error) {
+      console.error('Error updating title:', error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+  checkAndAwardBadgesEndpoint: async (req, res) => {
+    try {
+      const { uid } = req.params;
+      
+      // 1) Obtener el documento del usuario por UID
+      const userRef = doc(usersCollection, uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      const userData = userSnap.data();
+      const username = userData.username;
+      if (!username) {
+        return res.status(400).json({ error: 'Username field is missing' });
+      }
+
+      // 2) Llamar al service
+      await badgeService.checkAndAwardBadges(username);
+
+      // 3) Responder OK
+      return res
+        .status(200)
+        .json({ message: 'Badges checked and awarded if any.' });
+    } catch (err) {
+      console.error('Error in checkAndAwardBadgesEndpoint:', err);
+      return res.status(500).json({ error: err.message });
+    }
+  },
 };
 
 const anonymizeUserActivity = async (username) => {

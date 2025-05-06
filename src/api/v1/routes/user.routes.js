@@ -26,4 +26,9 @@ router.delete('/:uid/interests', userController.removeUserInterests);
 //Actualiza la Censura
 router.put('/:uid/censure',userController.toggleUserCensorship);
 
+// PUT /users/:uid/title
+router.put('/:uid/title', userController.updateUserTitle);
+
+// POST /users/:username/check-badges
+router.post('/:uid/badges', userController.checkAndAwardBadgesEndpoint);
 export default router;
