@@ -519,7 +519,6 @@ addComment: async (req, res) => {
     const { id } = req.params;                  // idDebate
     const { username, argument, position, refs = [], image = ""} = req.body;
 
-    console.debug("DEBUG: addComment recibidos:", { id, username, argument, refs, image });
 
 
     if (!username || !argument || position === undefined || position === null) {
@@ -929,7 +928,7 @@ addComment: async (req, res) => {
   addReplyComment: async (req, res) => {
     try {
       const { id } = req.params;
-      const { paidComment, username, argument, position, refs = [] } = req.body;
+      const { paidComment, username, argument, position, refs = [], image = "" } = req.body;
   
       if (!paidComment || !username || !argument || position === undefined) {
         return res.status(400).json({ error: 'Todos los campos son requeridos' });
@@ -981,7 +980,8 @@ addComment: async (req, res) => {
         datareg: new Date().toISOString(),
         refs,
         moderationStatus: moderationResult.decision === 'CENSURADO' ? 'CENSORED' : 'APPROVED',
-        moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : ''
+        moderationReason: moderationResult.decision === 'CENSURADO' ? moderationResult.reason : '',
+        image
       };
   
       // Registrar respuesta censurada si aplica
