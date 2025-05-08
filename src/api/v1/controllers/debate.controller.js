@@ -778,32 +778,39 @@ addComment: async (req, res) => {
 
   // Obtener debates más populares
   getPopularDebates: async (req, res) => {
-    try {     
-      const q = query(
-        debatesCollection,
-        orderBy('popularity', 'desc'),
-        limit(5)
-      );
+    try {
       const { censored = 'true' } = req.query;
-      
-      // Convertir showCensored a booleano
       let showCensoredContent;
       if (censored === 'true'){
         showCensoredContent = false;
       }else{
         showCensoredContent = true;
       }
-      const querySnapshot = await getDocs(q);
-      const debatesData = querySnapshot.docs.map(doc => {
-        return Debate.fromFirestore(doc);
-      });
 
-      let filteredDebates = debatesData;
-      // 5. Filtrar debates según preferencia de censura
+      // Construimos la consulta base
+      let q;
       if (!showCensoredContent) {
-        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
-        filteredDebates = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
+        // Solo debates aprobados cuando censored=true
+        q = query(
+          debatesCollection,
+          where('moderationStatus', '==', 'APPROVED'),
+          orderBy('popularity', 'desc'),
+          limit(5)
+        );
+      } else {
+        // Todos los debates (sin filtro de aprobación) cuando censored=false
+        q = query(
+          debatesCollection,
+          orderBy('popularity', 'desc'),
+          limit(5)
+        );
       }
+
+    const querySnapshot = await getDocs(q);
+    const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
+
+    // Ya no necesitamos filtrar después porque la consulta ya lo hizo
+    const filteredDebates = debatesData;
 
       // Obtener IDs únicos de categorías
       const categoryIds = [...new Set(filteredDebates.map(debate => debate.category))];
@@ -841,7 +848,6 @@ addComment: async (req, res) => {
       const { interests } = req.body; // Array de IDs de categorías de interés
       const { censored = 'true' } = req.query;
       
-      // Convertir showCensored a booleano
       let showCensoredContent;
       if (censored === 'true'){
         showCensoredContent = false;
@@ -868,15 +874,27 @@ addComment: async (req, res) => {
           count: 1
         }));
       }
-  
+      let q;
       // Obtener debates para cada categoría según la distribución
       const debatePromises = categoryDistribution.map(({ categoryId, count }) => {
-        const q = query(
-          debatesCollection,
-          where('category', '==', categoryId),
-          orderBy('popularity', 'desc'),
-          limit(count)
-        );
+        if (!showCensoredContent) {
+          // Solo debates aprobados cuando censored=true
+          q = query(
+            debatesCollection,
+            where('moderationStatus', '==', 'APPROVED'),
+            where('category', '==', categoryId),
+            orderBy('popularity', 'desc'),
+            limit(count)
+          );
+        } else {
+          // Todos los debates (sin filtro de aprobación) cuando censored=false
+          q = query(
+            debatesCollection,
+            where('category', '==', categoryId),
+            orderBy('popularity', 'desc'),
+            limit(count)
+          );
+        }
         return getDocs(q);
       });
   
