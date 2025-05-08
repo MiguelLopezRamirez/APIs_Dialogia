@@ -277,97 +277,108 @@ likesAndDislikes: async (req, res) => {
   }
 
   try {
-    // Obtén la referencia y el snapshot del debate en Firestore
+    // 1) Obtén debate
     const debateRef = doc(debatesCollection, id);
     const debateSnap = await getDoc(debateRef);
-    
     if (!debateSnap.exists()) {
       return res.status(404).json({ error: 'Debate no encontrado' });
     }
-    
-    // Extrae los datos del debate
     const debateData = debateSnap.data();
 
-    // Busca el índice del comentario
-    const commentIndex = debateData.comments.findIndex(c => c.idComment === idComment);
-    if (commentIndex === -1) {
+    // 2) Busca comentario
+    const idx = debateData.comments.findIndex(c => c.idComment === idComment);
+    if (idx === -1) {
       return res.status(404).json({ error: 'Comentario no encontrado' });
     }
-    
-    // Inicializa contadores si no existen
-    debateData.comments[commentIndex].likes = debateData.comments[commentIndex].likes || 0;
-    debateData.comments[commentIndex].dislikes = debateData.comments[commentIndex].dislikes || 0;
+    const comment = debateData.comments[idx];
 
-    // Actualiza el contador según la acción y el método recibido
-    // ocupo modificar esta parte
+    // 3) Inicializa contadores y arrays si faltan
+    comment.likes    = comment.likes    || 0;
+    comment.dislikes = comment.dislikes || 0;
+    comment.peopleInFavor   = comment.peopleInFavor   || [];
+    comment.peopleAgainst = comment.peopleAgainst || [];
+
+    // 4) Lógica de like / dislike
     if (action === 'like') {
-      //Actualizar contadores de likes
-      debateData.comments[commentIndex].likes = 
-        method === 'add'
-          ? debateData.comments[commentIndex].likes + 1
-          : Math.max(debateData.comments[commentIndex].likes - 1, 0);
+      // Ajusta contador
+      comment.likes = method === 'add'
+        ? comment.likes + 1
+        : Math.max(comment.likes - 1, 0);
 
+      if (method === 'add') {
+        // Añade usuario a peopleInFavor y lo quita de peopleAgainst
+        if (!comment.peopleInFavor.includes(username)) {
+          comment.peopleInFavor.push(username);
+        }
+        comment.peopleAgainst = comment.peopleAgainst.filter(u => u !== username);
+      } else {
+        // Quitar usuario de peopleInFavor
+        comment.peopleInFavor = comment.peopleInFavor.filter(u => u !== username);
+      }
+
+      // Actualiza actividad de usuario
       try {
-        const userQuery = query(usersCollection, where("username", "==", username));
-        const userSnapshot = await getDocs(userQuery);
-        
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          const updateData = {
-            "updatedAt": new Date(),
-          };
-    
+        const userQ = query(usersCollection, where("username", "==", username));
+        const userSnap = await getDocs(userQ);
+        if (!userSnap.empty) {
+          const userDoc = userSnap.docs[0];
+          const upd = { updatedAt: new Date() };
           if (method === 'add') {
-            updateData["activity.interactions.likes"] = increment(1);
-            updateData["activity.score"] = increment(1); 
+            upd["activity.interactions.likes"] = increment(1);
+            upd["activity.score"] = increment(1);
           } else {
-            updateData["activity.interactions.likes"] = increment(-1);
-            updateData["activity.score"] = increment(-1); 
+            upd["activity.interactions.likes"] = increment(-1);
+            upd["activity.score"] = increment(-1);
           }
-    
-          await updateDoc(userDoc.ref, updateData);
+          await updateDoc(userDoc.ref, upd);
           await checkAndAwardBadges(username);
         }
-      } catch (error) {
-        console.error("Error al actualizar actividad:", error);
+      } catch (err) {
+        console.error("Error al actualizar actividad (like):", err);
       }
+
     } else if (action === 'dislike') {
-      //Actualizar contadores de dislikes
-      debateData.comments[commentIndex].dislikes = 
-        method === 'add'
-          ? debateData.comments[commentIndex].dislikes + 1
-          : Math.max(debateData.comments[commentIndex].dislikes - 1, 0);
+      // Ajusta contador
+      comment.dislikes = method === 'add'
+        ? comment.dislikes + 1
+        : Math.max(comment.dislikes - 1, 0);
 
-      try {
-        const userQuery = query(usersCollection, where("username", "==", username));
-        const userSnapshot = await getDocs(userQuery);
-        
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          const updateData = {
-            "updatedAt": new Date(),
-          };
-    
-          if (method === 'add') {
-            updateData["activity.interactions.dislikes"] = increment(1);
-            updateData["activity.score"] = increment(0.5); // +0.5 por dislike
-          } else {
-            updateData["activity.interactions.dislikes"] = increment(-1);
-            updateData["activity.score"] = increment(-0.5); // -0.5 por quitar dislike
-          }
-    
-          await updateDoc(userDoc.ref, updateData);
-          
-
+      if (method === 'add') {
+        // Añade usuario a peopleAgainst y lo quita de peopleInFavor
+        if (!comment.peopleAgainst.includes(username)) {
+          comment.peopleAgainst.push(username);
         }
-      } catch (error) {
-        console.error("Error al actualizar actividad:", error);
+        comment.peopleInFavor = comment.peopleInFavor.filter(u => u !== username);
+      } else {
+        // Quitar usuario de peopleAgainst
+        comment.peopleAgainst = comment.peopleAgainst.filter(u => u !== username);
+      }
+
+      // Actualiza actividad de usuario
+      try {
+        const userQ = query(usersCollection, where("username", "==", username));
+        const userSnap = await getDocs(userQ);
+        if (!userSnap.empty) {
+          const userDoc = userSnap.docs[0];
+          const upd = { updatedAt: new Date() };
+          if (method === 'add') {
+            upd["activity.interactions.dislikes"] = increment(1);
+            upd["activity.score"] = increment(0.5);
+          } else {
+            upd["activity.interactions.dislikes"] = increment(-1);
+            upd["activity.score"] = increment(-0.5);
+          }
+          await updateDoc(userDoc.ref, upd);
+        }
+      } catch (err) {
+        console.error("Error al actualizar actividad (dislike):", err);
       }
     }
-    
-    // Guarda los cambios en Firestore
+
+    // 5) Guarda cambios en Firestore y responde
     await updateDoc(debateRef, { comments: debateData.comments });
-    res.json(debateData.comments[commentIndex]);
+    res.json(comment);
+
   } catch (error) {
     console.error('Error al actualizar comentario:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
