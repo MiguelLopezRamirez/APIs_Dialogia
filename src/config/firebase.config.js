@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 const { getFirestore } = require("firebase/firestore");
-import config from "./config.mjs";
+import config from "./config.js";
 
 console.log("Configuración de Firebase:", config); // Verifica que las credenciales se carguen correctamente
 
