@@ -6,6 +6,9 @@ const router = express.Router();
 // Obtener ranking
 router.get('/ranking', userController.getRanking);
 
+// Obtener ranking (sin limites)
+router.get('/rankingall', userController.getRankingAll);
+
 // Obtener usuario por uid
 router.get('/:uid', userController.getUserByUid);
 

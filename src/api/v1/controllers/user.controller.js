@@ -1,6 +1,7 @@
 const { db } = require('../../../config/firebase.config');
 const { User, usersCollection } = require('../models/user.model');
 const { Debate, debatesCollection,censoredCollection } = require('../models/debate.model');
+const { checkAndAwardBadges } = require('../services/badge.service');
 const { categoriesCollection } = require('../models/category.model');
 const { 
   doc, 
@@ -319,6 +320,53 @@ const userController = {
       });
     }
   },
+  getRankingAll: async (req, res) => {
+  try {
+    // 1. Obtener todos los usuarios de Firestore
+    const usersSnapshot = await getDocs(usersCollection);
+    const users = [];
+
+    usersSnapshot.forEach((doc) => {
+      const userData = doc.data();
+      // Valores por defecto si faltan
+      const score = userData.activity?.score || 0;
+      const comments = userData.activity?.interactions?.comments || 0;
+
+      users.push({
+        id: doc.id,
+        ...userData,
+        activity: {
+          ...userData.activity,
+          score,
+          interactions: {
+            ...userData.activity?.interactions,
+            comments
+          }
+        },
+        classification: comments > 0 ? "Crítico" : "Espectador"
+      });
+    });
+
+    // 2. Ordenar por score (descendente)
+    const rankedUsers = users.sort((a, b) => b.activity.score - a.activity.score);
+
+    // 3. Agregar posición en ranking
+    const rankedUsersWithPosition = rankedUsers.map((user, index) => ({
+      ...user,
+      rank: index + 1,
+    }));
+
+    // 4. Devolver TODO el ranking, sin límite
+    res.status(200).json(rankedUsersWithPosition);
+
+  } catch (error) {
+    res.status(500).json({
+      error: "Error al obtener ranking completo",
+      details: error.message
+    });
+  }
+},
+
   toggleUserCensorship: async (req, res) => {
     try {
       const { uid } = req.params;
@@ -406,7 +454,7 @@ const userController = {
       }
 
       // 2) Llamar al service
-      await badgeService.checkAndAwardBadges(username);
+      await checkAndAwardBadges(username);
 
       // 3) Responder OK
       return res
