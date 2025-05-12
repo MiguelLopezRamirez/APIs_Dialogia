@@ -5,14 +5,15 @@ const { collection, query, where, getDocs, getDoc, doc } = require('firebase/fir
 const usersCollection = db ? collection(db, 'users') : null;
 
 class User {
-  constructor(uid, email, username, interests = [], censorship, insignias = [], title) {
+  constructor(uid, email, username, interests = [], censorship, insignias = [], title, avatarId) {
     this.uid = uid;
     this.email = email;
     this.username = username;
     this.interests = interests;
     this.censorship = censorship;
     this.insignias = insignias;
-    this.title = title
+    this.title = title;
+    this.avatarId = avatarId;
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
@@ -27,6 +28,7 @@ class User {
       censorship: this.censorship,
       insignias: this.insignias,
       title: this.title,
+      avatarId: this.avatarId,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };
@@ -42,7 +44,8 @@ class User {
       data.interests || [],
       data.censorship,
       data.insignias || [], 
-      data.title || ""
+      data.title || "",
+      data.avatarId || 1,
     );
   }
 

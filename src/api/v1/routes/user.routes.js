@@ -31,4 +31,7 @@ router.put('/:uid/title', userController.updateUserTitle);
 
 // POST /users/:username/check-badges
 router.post('/:uid/badges', userController.checkAndAwardBadgesEndpoint);
+
+// PUT /users/:uid/updatedata
+router.put('/:uid/updatedata', userController.updateUserData);
 export default router;

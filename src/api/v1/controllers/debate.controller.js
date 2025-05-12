@@ -417,7 +417,34 @@ getDebateById: async (req, res) => {
         );
       }
     }
-    
+
+    const q = query(usersCollection, where('username', '==', debate.username));
+    const querySnapshot = await getDocs(q);
+    let user;
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      user = User.fromFirestore(userDoc); // Asegúrate que User.fromFirestore esté funcionando
+    }
+
+    // Cargar datos de usuario en cada comentario
+     
+    if (Array.isArray(debate.comments)) {
+      for (const comment of debate.comments) {
+        if (comment.username) {
+          const q = query(usersCollection, where('username', '==', comment.username));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            const userDoc = querySnapshot.docs[0];
+            const user = User.fromFirestore(userDoc);
+            comment.user = user; // Guardar datos completos del usuario
+          } else {
+            comment.user = null;
+          }
+        }
+      }
+    }
+
     // Obtener nombre de la categoría
     const categoryRef = doc(categoriesCollection, debate.category);
     const categorySnap = await getDoc(categoryRef);
@@ -431,7 +458,7 @@ getDebateById: async (req, res) => {
 
     const responseData = debate.toJSON();
     responseData.bestArgument = getBestArgument(debate.comments);
-
+    responseData.user = user;
     // Registrar interacción de comentar en la actividad del usuario 
     if (username) {
       try {
@@ -853,105 +880,108 @@ addComment: async (req, res) => {
   },
 
   // Obtener debates más populares
-  getRecommendDebates: async (req, res) => {
-    try {
-      
-      const { interests } = req.body; // Array de IDs de categorías de interés
-      const { censored = 'true' } = req.query;
-      
-      let showCensoredContent;
-      if (censored === 'true'){
-        showCensoredContent = false;
-      }else{
-        showCensoredContent = true;
-      }
-        
-      if (!interests || !Array.isArray(interests) || interests.length === 0) {
-        return res.status(400).json({ error: "Se requiere un arreglo de intereses" });
-      }
-      
-      // Determinar distribución de debates por categoría
-      let categoryDistribution = [];
-      if (interests.length === 1) {
-        categoryDistribution = [{ categoryId: interests[0], count: 3 }];
-      } else if (interests.length === 2) {
-        categoryDistribution = [
-          { categoryId: interests[0], count: 2 },
-          { categoryId: interests[1], count: 1 }
-        ];
-      } else {
-        categoryDistribution = interests.slice(0, 3).map(categoryId => ({
-          categoryId,
-          count: 1
-        }));
-      }
-      let q;
-      // Obtener debates para cada categoría según la distribución
-      const debatePromises = categoryDistribution.map(({ categoryId, count }) => {
-        if (!showCensoredContent) {
-          // Solo debates aprobados cuando censored=true
-          q = query(
+getRecommendDebates: async (req, res) => {
+  try {
+    const { interests } = req.body;
+    const { censored = 'true' } = req.query;
+
+    let showCensoredContent = censored !== 'true';
+
+    if (!interests || !Array.isArray(interests) || interests.length === 0) {
+      return res.status(400).json({ error: "Se requiere un arreglo de intereses" });
+    }
+
+    let categoryDistribution = [];
+    if (interests.length === 1) {
+      categoryDistribution = [{ categoryId: interests[0], count: 3 }];
+    } else if (interests.length === 2) {
+      categoryDistribution = [
+        { categoryId: interests[0], count: 2 },
+        { categoryId: interests[1], count: 1 }
+      ];
+    } else {
+      categoryDistribution = interests.slice(0, 3).map(categoryId => ({
+        categoryId,
+        count: 1
+      }));
+    }
+
+    const debatePromises = categoryDistribution.map(({ categoryId, count }) => {
+      const q = showCensoredContent
+        ? query(
+            debatesCollection,
+            where('category', '==', categoryId),
+            orderBy('popularity', 'desc'),
+            limit(count)
+          )
+        : query(
             debatesCollection,
             where('moderationStatus', '==', 'APPROVED'),
             where('category', '==', categoryId),
             orderBy('popularity', 'desc'),
             limit(count)
           );
-        } else {
-          // Todos los debates (sin filtro de aprobación) cuando censored=false
-          q = query(
-            debatesCollection,
-            where('category', '==', categoryId),
-            orderBy('popularity', 'desc'),
-            limit(count)
-          );
-        }
-        return getDocs(q);
-      });
-  
-      const querySnapshots = await Promise.all(debatePromises);
-      let debatesData = [];
-      
-      querySnapshots.forEach(snapshot => {
-        snapshot.docs.forEach(doc => {
-          debatesData.push(Debate.fromFirestore(doc));
-        });
-      });
-      
-      // 5. Filtrar debates según preferencia de censura
-      if (!showCensoredContent) {
-        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
-        debatesData = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
-      }
+      return getDocs(q);
+    });
 
-      // Mezclar los debates para no agruparlos por categoría
-      debatesData = debatesData.sort(() => Math.random() - 0.5);
-  
-      // Obtener nombres de categorías (igual que antes)
-      const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
-      const categoryPromises = categoryIds.map(id => getDoc(doc(categoriesCollection, id)));
-      const categorySnapshots = await Promise.all(categoryPromises);
-  
-      const categoryMap = {};
-      categorySnapshots.forEach(snap => {
-        if (snap.exists()) {
-          const category = Category.fromFirestore(snap);
-          categoryMap[snap.id] = category.name;
-        }
+    const querySnapshots = await Promise.all(debatePromises);
+    let debatesData = [];
+    querySnapshots.forEach(snapshot => {
+      snapshot.docs.forEach(doc => {
+        debatesData.push(Debate.fromFirestore(doc));
       });
-  
-      // Formatear respuesta
-      const debates = debatesData.map(debate => {
-        const json = debate.toJSON();
-        json.category = categoryMap[debate.category] || null;
-        return json;
-      });
-  
-      res.status(200).json(debates);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    });
+
+    if (!showCensoredContent) {
+      debatesData = debatesData.filter(debate => debate.moderationStatus === 'APPROVED');
     }
-  },
+
+    debatesData = debatesData.sort(() => Math.random() - 0.5);
+
+    // Obtener nombres de categorías
+    const categoryIds = [...new Set(debatesData.map(debate => debate.category))];
+    const categorySnapshots = await Promise.all(
+      categoryIds.map(id => getDoc(doc(categoriesCollection, id)))
+    );
+
+    const categoryMap = {};
+    categorySnapshots.forEach(snap => {
+      if (snap.exists()) {
+        const category = Category.fromFirestore(snap);
+        categoryMap[snap.id] = category.name;
+      }
+    });
+
+    // Obtener usuarios a partir de usernames
+    const usernames = [...new Set(debatesData.map(debate => debate.username))];
+    const userMap = {};
+
+    for (const username of usernames) {
+      const q = query(usersCollection, where('username', '==', username));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const user = User.fromFirestore(userDoc);
+        userMap[username] = {
+          username: user.username,
+          avatarId: user.avatarId || "1",
+        };
+      }
+    }
+
+    // Formatear respuesta final
+    const debates = debatesData.map(debate => {
+      const json = debate.toJSON();
+      json.category = categoryMap[debate.category] || null;
+      json.user = userMap[debate.username] || null;
+      return json;
+    });
+
+    res.status(200).json(debates);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+},
 
   // debate.controller.js (agregar este nuevo método)
   addReplyComment: async (req, res) => {
@@ -1174,7 +1204,8 @@ const getBestArgument = (comments) => {
     likes: bestComment.likes,
     position: bestComment.position,
     username: bestComment.username,
-    datareg: bestComment.datareg
+    datareg: bestComment.datareg,
+    user: bestComment.user || null,
   };
 };
 

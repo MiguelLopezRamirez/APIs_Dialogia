@@ -12,9 +12,11 @@ const {
   query,
   where,
   deleteDoc,
+  setDoc,
   writeBatch,
   collection
 } = require('firebase/firestore');
+const admin = require('../../../config/firebaseAdmin.config');
 
 const userController = {
   // Obtener usuario por uid
@@ -417,6 +419,77 @@ const userController = {
       return res.status(500).json({ error: err.message });
     }
   },
+updateUserData: async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const updates = req.body;
+    const userRef = doc(usersCollection, uid);
+
+    // Obtener datos actuales del usuario
+    const userSnapshot = await getDoc(userRef);
+    if (!userSnapshot.exists()) {
+      return res.status(404).json({ success: false, error: 'Usuario no encontrado' });
+    }
+
+    const currentData = userSnapshot.data();
+    const changedFields = {};
+
+    // Validaciones y comparación de datos
+    if (updates.email !== undefined && updates.email !== currentData.email) {
+      if (!isValidEmail(updates.email)) {
+        return res.status(400).json({ success: false, error: 'Formato de correo inválido' });
+      }
+      if (!await isEmailAvailable(updates.email)) {
+        return res.status(400).json({ success: false, error: 'El correo ya está en uso' });
+      }
+      changedFields.email = updates.email;
+    }
+
+    if (updates.username !== undefined && updates.username !== currentData.username) {
+      if (!isValidUsername(updates.username)) {
+        return res.status(400).json({ success: false, error: 'Nombre de usuario inválido' });
+      }
+      if (!await isUsernameAvailable(updates.username)) {
+        return res.status(400).json({ success: false, error: 'El nombre de usuario ya está en uso' }); 
+      }
+      changedFields.username = updates.username;
+    }
+
+    if (updates.avatarId !== undefined && updates.avatarId !== currentData.avatarId) {
+      if (!isValidAvatarId(updates.avatarId)) {
+        return res.status(400).json({ success: false, error: 'ID de avatar inválido' });
+      }
+      changedFields.avatarId = updates.avatarId;
+    }
+
+    if (Object.keys(changedFields).length === 0) {
+      return res.status(200).json({ success: true, message: "Sin cambios por hacer" });
+    }
+
+
+    // Actualizar en otros sistemas si es necesario
+    if (changedFields.email) {
+      await updateEmailInAuthSystem(uid, changedFields.email, currentData.email);
+    }
+    if (changedFields.username) {
+      await updateUsernameInDatabase(uid, changedFields.username, currentData.username);
+    }
+    // Actualizar en Firestore
+    await updateDoc(userRef, changedFields);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Datos de usuario actualizados correctamente',
+      updatedFields: Object.keys(changedFields)
+    });
+
+  } catch (error) {
+    console.error('Error updating user data:', error);
+    return res.status(500).json({ success: false, error: 'Error interno del servidor' });
+  }
+}
+
+
 };
 
 const anonymizeUserActivity = async (username) => {
@@ -589,5 +662,139 @@ const findUserActivity = async (username) => {
     };
   }
 };
+
+
+
+// Funciones de validación auxiliares
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+function isValidUsername(username) {
+  return username && username.length >= 3 && username.length <= 20;
+}
+
+function isValidAvatarId(avatarId) {
+  return Number.isInteger(avatarId) && avatarId > 0;
+}
+
+// Funciones específicas para actualizaciones
+async function updateEmailInAuthSystem(uid, newEmail, oldEmail) {
+  try {
+    // Primero, actualizamos el correo en Firestore
+      
+    const emailsCollection = collection(db, 'emails');
+
+    await Promise.all([
+      deleteDoc(doc(emailsCollection, oldEmail)),
+      setDoc(doc(emailsCollection, newEmail), { uid })
+    ]);
+  }
+  catch (error) {
+    throw new Error('No se pudo actualizar el correo en el sistema de autenticación', error);
+  }
+  // try {
+  //   await admin.auth.updateUser(uid, {
+  //     email: newEmail,
+  //   });
+  //   return { success: true };
+  // } catch (error) {
+  //   console.error('Error al actualizar email en Auth:', error);
+  //   throw new Error('No se pudo actualizar el correo en el sistema de autenticación');
+  // }
+
+}
+const isEmailAvailable = async (newEmail) => {
+  try {
+    // Buscar en la colección de usuarios donde email == newEmail
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('email', '==', newEmail));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.empty; // true si está disponible, false si ya existe
+  } catch (error) {
+    console.error("Error al verificar email:", error);
+    throw new Error("Error al verificar disponibilidad de email");
+  }
+};
+
+async function updateUsernameInDatabase(uid, newUsername, oldUsername) {
+  // Implementación adicional si necesitas actualizar en otras colecciones
+  // Por ejemplo, actualizar referencias en posts o comentarios
+
+  try {
+    const usernamesCollection = collection(db, 'usernames');
+
+    await Promise.all([
+      deleteDoc(doc(usernamesCollection, oldUsername)),
+      setDoc(doc(usernamesCollection, newUsername), { uid }),
+      updateUsernameInAllDebates(oldUsername, newUsername),
+    ]);
+  }catch (error) {
+    console.error('Error al actualizar username en la base de datos:', error);
+    throw new Error('No se pudo actualizar el nombre de usuario en la base de datos');
+  }
+};
+
+const isUsernameAvailable = async (newUsername) => {
+  try {
+    // Buscar en la colección de usuarios donde email == newEmail
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('username', '==', newUsername));
+    const querySnapshot = await getDocs(q);
+    
+    return querySnapshot.empty; // true si está disponible, false si ya existe
+  } catch (error) {
+    console.error("Error al verificar email:", error);
+    throw new Error("Error al verificar disponibilidad de email");
+  }
+};
+
+ const  updateUsernameInAllDebates = async(oldUsername, newUsername) =>{
+  const debatesRef = collection(db, "debates");
+  const snapshot = await getDocs(debatesRef);
+
+  let updatedCount = 0;
+
+  for (const debateDoc of snapshot.docs) {
+    const data = debateDoc.data();
+    let changed = false;
+
+    // Actualizar username en comentarios
+    const updatedComments = data.comments?.map(comment => {
+      if (comment.username === oldUsername) {
+        changed = true;
+        return { ...comment, username: newUsername };
+      }
+      return comment;
+    });
+
+    // Actualizar arrays de participación
+    const updatedPeopleInFavor = data.peopleInFavor?.map(u => u === oldUsername ? (changed = true, newUsername) : u);
+    const updatedPeopleAgaist = data.peopleAgaist?.map(u => u === oldUsername ? (changed = true, newUsername) : u);
+    const updatedFollowers = data.followers?.map(u => u === oldUsername ? (changed = true, newUsername) : u);
+    const updatedRefs = data.refs?.map(u => u === oldUsername ? (changed = true, newUsername) : u);
+
+    // Actualizar username del creador del debate
+    const updatedCreatorUsername = data.username === oldUsername ? newUsername : data.username;
+    if (data.username === oldUsername) changed = true;
+
+    if (changed) {
+      await updateDoc(doc(db, "debates", debateDoc.id), {
+        ...(updatedComments && { comments: updatedComments }),
+        ...(updatedPeopleInFavor && { peopleInFavor: updatedPeopleInFavor }),
+        ...(updatedPeopleAgaist && { peopleAgaist: updatedPeopleAgaist }),
+        ...(updatedFollowers && { followers: updatedFollowers }),
+        ...(updatedRefs && { refs: updatedRefs }),
+        username: updatedCreatorUsername,
+      });
+      updatedCount++;
+    }
+  }
+
+
+}
+
 
 module.exports = userController;
