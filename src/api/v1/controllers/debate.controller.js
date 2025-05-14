@@ -260,7 +260,6 @@ getAllDebates: async (req, res) => {
       json.category = categoryMap[debate.category] || null;
       return json;
     });
-
     res.status(200).json(debates);
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -380,6 +380,7 @@ const userController = {
       const userRef = doc(usersCollection, uid);
       await updateDoc(userRef, {
         title,
+        "activity.title": title,
         updatedAt: new Date()
       });
 
