@@ -16,7 +16,7 @@ const {
   writeBatch,
   collection
 } = require('firebase/firestore');
-const admin = require('../../../config/firebaseAdmin.config');
+
 
 const userController = {
   // Obtener usuario por uid

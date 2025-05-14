@@ -748,11 +748,11 @@ addComment: async (req, res) => {
   },
 
   // Buscar debates por categoría
-  getDebatesByCategory: async (req, res) => {
-    try {
-      const { categoryId } = req.params;
-      const { sort = 'active', search = '', censored = 'true' } = req.query;
-      
+getDebatesByCategory: async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { sort = 'active', search = '', censored = 'true' } = req.query;
+
       // Convertir showCensored a booleano
       let showCensoredContent;
       if (censored === 'true'){
@@ -762,56 +762,76 @@ addComment: async (req, res) => {
       }
   
 
-      // 1. Validar que la categoría exista
-      const categoryRef = doc(categoriesCollection, categoryId);
-      const categorySnap = await getDoc(categoryRef);
-      if (!categorySnap.exists()) {
-        return res.status(404).json({ error: 'Categoría no encontrada' });
-      }
-
-      // 2. Obtener debates
-      const q = query(debatesCollection, where('category', '==', categoryId));
-      const querySnapshot = await getDocs(q);
-      const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
-
-      let filteredDebates = debatesData;
-      // 5. Filtrar debates según preferencia de censura
-      if (!showCensoredContent) {
-        // Filtrar los debates cuyo ID NO esté presente en el array de IDs censurados
-        filteredDebates = debatesData.filter(debate => debate.moderationStatus == 'APPROVED')
-
-      }
-
-      // 6. Aplicar búsqueda si existe
-      const searchTerm = search.toLowerCase();
-        filteredDebates = filteredDebates.filter(debate => 
-        debate.nameDebate.toLowerCase().includes(searchTerm) || 
-        debate.argument.toLowerCase().includes(searchTerm)
-      );
-
-      // 7. Ordenamiento
-      switch (sort) {
-        case 'active':
-          filteredDebates = filteredDebates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
-          break;
-        case 'popular':
-          filteredDebates = filteredDebates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
-          break;
-        case 'ancient':
-          filteredDebates = filteredDebates.sort((a, b) => a.datareg - b.datareg);
-          break;
-        case 'recent':
-        default:
-          filteredDebates = filteredDebates.sort((a, b) => b.datareg - a.datareg);
-          break;
-      }
-      console.log(filteredDebates);
-      res.status(200).json(filteredDebates);
-      
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+    // 1. Validar que la categoría exista
+    const categoryRef = doc(categoriesCollection, categoryId);
+    const categorySnap = await getDoc(categoryRef);
+    if (!categorySnap.exists()) {
+      return res.status(404).json({ error: 'Categoría no encontrada' });
     }
-  },
+
+    // 2. Obtener debates
+    const q = query(debatesCollection, where('category', '==', categoryId));
+    const querySnapshot = await getDocs(q);
+    const debatesData = querySnapshot.docs.map(doc => Debate.fromFirestore(doc));
+
+    let filteredDebates = debatesData;
+
+    // 3. Filtrar censura
+    if (!showCensoredContent) {
+      filteredDebates = filteredDebates.filter(debate => debate.moderationStatus === 'APPROVED');
+    }
+
+    // 4. Búsqueda
+    const searchTerm = search.toLowerCase();
+    filteredDebates = filteredDebates.filter(debate => 
+      debate.nameDebate.toLowerCase().includes(searchTerm) || 
+      debate.argument.toLowerCase().includes(searchTerm)
+    );
+
+    // 5. Ordenamiento
+    switch (sort) {
+      case 'active':
+        filteredDebates = filteredDebates.sort((a, b) => (b.comments?.length || 0) - (a.comments?.length || 0));
+        break;
+      case 'popular':
+        filteredDebates = filteredDebates.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        break;
+      case 'ancient':
+        filteredDebates = filteredDebates.sort((a, b) => a.datareg - b.datareg);
+        break;
+      case 'recent':
+      default:
+        filteredDebates = filteredDebates.sort((a, b) => b.datareg - a.datareg);
+        break;
+    }
+
+    // 6. Obtener datos del usuario para cada debate
+    const enrichedDebates = await Promise.all(filteredDebates.map(async (debate) => {
+      if (!debate.username) return { ...debate, user: null };
+
+      try {
+        const q = query(usersCollection, where('username', '==', debate.username));
+        const userSnap = await getDocs(q);
+        if (!userSnap.empty) {
+          const userData = userSnap.docs[0].data();
+          const { username, avatarId } = userData;
+          return { ...debate, user: { username, avatarId } };
+        }
+      } catch (e) {
+        console.error(`Error fetching user "${debate.username}":`, e);
+      }
+
+      return { ...debate, user: null }; // fallback si no se encuentra el usuario
+    }));
+
+    res.status(200).json(enrichedDebates);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+},
+
 
   // Obtener debates más populares
   getPopularDebates: async (req, res) => {
